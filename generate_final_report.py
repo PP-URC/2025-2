@@ -35,11 +35,17 @@ students = pd.read_sql("SELECT * FROM students_raw", conn)
 
 
 panel = pd.read_sql("SELECT * FROM inscripciones", conn)
-panel = panel.merge(students[["student_id","horas_trabajo","traslado_min"]],
-                    on="student_id", how="left")
+
 
 print("students_raw columns:", students.columns.tolist())
 print("inscripciones columns:", panel.columns.tolist())
+
+
+
+panel = panel.merge(students[["student_id","horas_trabajo","traslado_min"]],
+                    on="student_id", how="left")
+
+
 
 
 # Derive abandono if not exists
