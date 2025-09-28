@@ -30,6 +30,11 @@ os.makedirs(OUT_DIR, exist_ok=True)
 # --- 1. Load data ---
 conn = sqlite3.connect(DB_PATH)
 students = pd.read_sql("SELECT * FROM students_raw", conn)
+
+print("students_raw columns:", students.columns.tolist())
+print("inscripciones columns:", panel.columns.tolist())
+
+
 panel = pd.read_sql("SELECT * FROM inscripciones", conn)
 panel = panel.merge(students[["student_id","horas_trabajo","traslado_min"]],
                     on="student_id", how="left")
