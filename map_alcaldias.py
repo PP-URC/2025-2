@@ -56,7 +56,7 @@ dropout_map = merged.groupby("alcaldia_residencia")["abandono"].mean().reset_ind
 gdf = gpd.read_file(GEOJSON_FILE)
 
 # CDMX official file: alcaldía names under 'nomgeo'
-merge_key = "nomgeo"
+merge_key = "NOMGEO"
 gdf = gdf.merge(dropout_map, left_on=merge_key,
                 right_on="alcaldia_residencia", how="left")
 
