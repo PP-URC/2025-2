@@ -8,7 +8,7 @@ import numpy as np
 import geopandas as gpd
 import json
 from shapely.geometry import shape
-from Faker import fake
+from faker import Faker
 
 DB_PATH = "unrc.db"
 COLONIAS_FILE = "catlogo-de-colonias.json"
@@ -17,6 +17,7 @@ COLONIAS_FILE = "catlogo-de-colonias.json"
 with open(COLONIAS_FILE, "r", encoding="utf-8") as f:
     raw = json.load(f)
 
+fake = Faker()
 features = raw["features"]
 rows = []
 for ft in features:
