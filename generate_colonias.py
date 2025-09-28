@@ -13,7 +13,7 @@ DB_PATH = "unrc.db"
 # --- Descargar catálogo de colonias ---
 COLONIAS_FILE = "coloniascdmx.geojson"
 if not os.path.exists(COLONIAS_FILE):
-    url = "https://datos.cdmx.gob.mx/dataset/04a1900a-0c2f-41ed-94dc-3d2d5bad4065/resource/f1408eeb-4e97-4548-bc69-61ff83838b1d/download/coloniascdmx.geojson"
+    url = "https://datos.cdmx.gob.mx/dataset/02c6ce99-dbd8-47d8-aee1-ae885a12bb2f/resource/265d519b-8949-46c0-8caa-5eaca7e690ec/download/catlogo-de-colonias.json"
     print("⬇️ Descargando catálogo de colonias...")
     r = requests.get(url)
     r.raise_for_status()
