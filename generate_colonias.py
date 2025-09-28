@@ -7,7 +7,7 @@ import random
 import os
 
 DB_PATH = "unrc.db"
-COLONIAS_FILE = "catlogo-de-colonias.json"
+COLONIAS_FILE = "coloniascdmx.geojson"
 N_STUDENTS = 1000
 SEMESTRES_MAX = 8
 
@@ -18,7 +18,7 @@ print("📥 Loading colonias catalog...")
 gdf_colonias = gpd.read_file(COLONIAS_FILE)
 print("Columns:", gdf_colonias.columns.tolist())
 
-# Use correct column names: colonia + alc
+# Use correct columns: colonia + alc
 colonias = gdf_colonias[["colonia", "alc"]].drop_duplicates()
 colonias = colonias.rename(columns={"colonia": "colonia_residencia",
                                     "alc": "alcaldia"})
@@ -41,19 +41,30 @@ students = pd.DataFrame({
 
 # --- Generate inscripciones (semesters) ---
 rows = []
-for sid in students["student_id"]:
-    n_sem = np.random.randint(1, SEMESTRES_MAX+1)  # number of semesters completed
+for sid, row in students.iterrows():
+    n_sem = np.random.randint(1, SEMESTRES_MAX+1)  # how many semesters completed
     for sem in range(1, n_sem+1):
-        promedio = np.clip(np.random.normal(8, 1), 5, 10)  # GPA-like
+        promedio = np.clip(np.random.normal(8, 1), 5, 10)
         materias = np.random.randint(4,7)
         aprobadas = np.random.binomial(materias, 0.8)
         reprobadas = materias - aprobadas
-        asistencia = np.clip(np.random.normal(85, 10), 50, 100)
+        asistencia = np.clip(np.random.normal(85, 10), 40, 100)
         beca = np.random.choice([0,1], p=[0.7,0.3])
         tutoria = np.random.choice([0,1], p=[0.8,0.2])
+
+        # Base dropout probability
+        base_p = 0.1
+        if promedio < 7: base_p += 0.25
+        if asistencia < 70: base_p += 0.15
+        if row["horas_trabajo"] > 20: base_p += 0.1
+        if row["traslado_min"] > 60: base_p += 0.1
+        base_p = min(base_p, 0.9)
+
+        abandono = np.random.binomial(1, base_p) if sem == n_sem else 0
+
         rows.append({
             "id": len(rows)+1,
-            "student_id": sid,
+            "student_id": row["student_id"],
             "semestre": sem,
             "promedio": promedio,
             "materias_inscritas": materias,
@@ -61,7 +72,8 @@ for sid in students["student_id"]:
             "materias_reprobadas": reprobadas,
             "asistencia_pct": asistencia,
             "beca": beca,
-            "apoyo_tutoria": tutoria
+            "apoyo_tutoria": tutoria,
+            "abandono": abandono
         })
 
 inscripciones = pd.DataFrame(rows)
@@ -77,3 +89,5 @@ conn.close()
 
 print(f"✅ Created {DB_PATH} with {len(students)} students and {len(inscripciones)} inscripciones")
 print("Columns in students_raw:", students.columns.tolist())
+print("Sample abandono rates by semestre:")
+print(inscripciones.groupby("semestre")["abandono"].mean())
