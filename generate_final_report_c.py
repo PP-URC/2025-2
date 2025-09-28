@@ -1,126 +1,152 @@
 # generate_final_report_c.py
-"""
-Pipeline:
-1. Load DB (unrc.db)
-2. Use 'abandono' from generator (no overwrite)
-3. Logistic regression
-4. Save plots, top 10 risk list, and CSVs into ./out_pipeline
-"""
-
-import sqlite3
+import sqlite3, os
 import pandas as pd
 import numpy as np
-import os
 import matplotlib.pyplot as plt
-from statsmodels.discrete.discrete_model import Logit
-from statsmodels.tools import add_constant
-from sklearn.metrics import roc_curve, auc
+import statsmodels.api as sm
+import geopandas as gpd
+import requests
+import json
+import matplotlib as mpl
+
+OUT_DIR = "out_pipeline"
+os.makedirs(OUT_DIR, exist_ok=True)
 
 DB_PATH = "unrc.db"
-OUT_DIR = "./out_pipeline"
-os.makedirs(OUT_DIR, exist_ok=True)
 
 # --- Load data ---
 conn = sqlite3.connect(DB_PATH)
 students = pd.read_sql("SELECT * FROM students_raw", conn)
-panel = pd.read_sql("SELECT * FROM inscripciones", conn)
+inscripciones = pd.read_sql("SELECT * FROM inscripciones", conn)
 conn.close()
 
-# ✅ Keep generator's dropout
-panel["abandono_flag"] = panel["abandono"]
+print(f"📊 Tasa global de abandono: {inscripciones['abandono'].mean()*100:.2f}%")
 
-# --- Aggregate dropout rates ---
-agg_sem = panel.groupby("semestre")["abandono_flag"].mean().reset_index()
-agg_sem.rename(columns={"abandono_flag":"abandono_rate"}, inplace=True)
+# Merge for modeling
+merged = inscripciones.merge(
+    students[["student_id","sexo","colonia_residencia","alcaldia",
+              "horas_trabajo","traslado_min"]],
+    on="student_id", how="left"
+)
 
 # --- Logistic regression ---
-merged = panel.merge(students[["student_id","horas_trabajo","traslado_min"]],
-                     on="student_id", how="left")
+X = merged[["promedio","asistencia_pct","horas_trabajo","traslado_min"]]
+X = sm.add_constant(X)
+y = merged["abandono"]
 
-predictors = ["promedio","asistencia_pct","horas_trabajo","traslado_min"]
-X = merged[predictors].copy()
-X = add_constant(X, has_constant="add")
-y = merged["abandono_flag"]
-
-logit = Logit(y, X).fit(disp=False)
-
-print("\n📊 Logistic regression summary:")
+logit = sm.Logit(y, X).fit(disp=False)
 print(logit.summary())
 
-# --- Save Figures ---
+params = pd.DataFrame(logit.params, columns=["coef"])
+params.to_csv(os.path.join(OUT_DIR, "logit_params.csv"))
 
-# Figure 1: Dropout by semester
-plt.plot(agg_sem["semestre"], agg_sem["abandono_rate"], marker="o")
-plt.title("Tasa de abandono por semestre")
+# --- Predicted probabilities ---
+merged["abandono_prob"] = logit.predict(X)
+
+# --- Plot: observed vs predicted by semestre ---
+obs = merged.groupby("semestre")["abandono"].mean()
+pred = merged.groupby("semestre")["abandono_prob"].mean()
+
+plt.figure(figsize=(8,5))
+plt.plot(obs.index, obs.values*100, "o-", label="Observado (%)")
+plt.plot(pred.index, pred.values*100, "s--", label="Predicho (%)")
 plt.xlabel("Semestre")
-plt.ylabel("Proporción de abandono")
-plt.grid(True)
-plt.savefig(os.path.join(OUT_DIR, "figura1_abandono_por_semestre.png"))
-plt.close()
-
-# Figure 2: Logistic regression coefficients
-coefs = pd.DataFrame({
-    "var": X.columns,
-    "coef": logit.params
-})
-coefs = coefs[coefs["var"]!="const"].sort_values("coef")
-
-plt.barh(coefs["var"], coefs["coef"], color="steelblue")
-plt.title("Coeficientes de la regresión logística")
-plt.xlabel("Efecto en log-odds de abandono")
+plt.ylabel("Tasa de abandono (%)")
+plt.title("Abandono observado vs predicho por semestre")
+plt.legend()
 plt.tight_layout()
-plt.savefig(os.path.join(OUT_DIR, "figura2_coef_logistica.png"))
-plt.close()
-
-# Figure 3: ROC curve
-y_pred = logit.predict(X)
-fpr, tpr, _ = roc_curve(y, y_pred)
-roc_auc = auc(fpr, tpr)
-
-plt.plot(fpr, tpr, color="darkorange", lw=2, label=f"ROC curve (área = {roc_auc:.2f})")
-plt.plot([0,1],[0,1], color="navy", lw=2, linestyle="--")
-plt.xlabel("Tasa de falsos positivos")
-plt.ylabel("Tasa de verdaderos positivos")
-plt.title("Curva ROC del modelo logístico")
-plt.legend(loc="lower right")
-plt.savefig(os.path.join(OUT_DIR, "figura3_roc.png"))
+plt.savefig(os.path.join(OUT_DIR,"figura1_abandono_vs_predicho.png"))
 plt.close()
 
 # --- Top 10 risk students ---
-merged["abandono_prob"] = logit.predict(X)
+cols_keep = ["student_id","sexo","colonia_residencia","alcaldia",
+             "promedio","asistencia_pct","horas_trabajo","traslado_min","abandono_prob"]
 
-risk = merged.groupby("student_id")["abandono_prob"].mean().reset_index()
-risk = risk.merge(students[["student_id","sexo","colonia_residencia","alcaldia"]],
-                  on="student_id", how="left")
+top10 = merged.groupby("student_id").apply(
+    lambda df: df[cols_keep].iloc[-1]  # last semester row
+).reset_index(drop=True)
 
-top10 = risk.sort_values("abandono_prob", ascending=False).head(10)
-
-# Save as CSV
+top10 = top10.sort_values("abandono_prob", ascending=False).head(10)
 top10.to_csv(os.path.join(OUT_DIR, "top10_risk_students.csv"), index=False)
 
-# Save as image
-fig, ax = plt.subplots(figsize=(8,4))
-ax.barh(top10["student_id"].astype(str), top10["abandono_prob"]*100, color="salmon")
+# Chart with annotations
+fig, ax = plt.subplots(figsize=(10,6))
+bars = ax.barh(top10["student_id"].astype(str), top10["abandono_prob"]*100, color="salmon")
+
 ax.set_xlabel("Probabilidad de abandono (%)")
 ax.set_ylabel("ID Estudiante")
 ax.set_title("Top 10 estudiantes con mayor riesgo de abandono")
 plt.gca().invert_yaxis()
+
+for bar, (_, row) in zip(bars, top10.iterrows()):
+    label = f"Prom:{row['promedio']:.1f}, Asist:{row['asistencia_pct']:.0f}%, Trab:{row['horas_trabajo']}h, Trasl:{row['traslado_min']}m"
+    ax.text(bar.get_width()+1, bar.get_y()+bar.get_height()/2,
+            label, va="center", fontsize=8)
+
 plt.tight_layout()
 plt.savefig(os.path.join(OUT_DIR,"figura4_top10_risk.png"))
 plt.close()
 
-# --- Risk per semester (average predicted prob) ---
-sem_risk = merged.groupby("semestre")["abandono_prob"].mean().reset_index()
+# --- Map of colonias with dropout risk ---
+COLONIAS_FILE = "catlogo-de-colonias.json"
+url_colonias = "https://datos.cdmx.gob.mx/dataset/04a1900a-0c2f-41ed-94dc-3d2d5bad4065/resource/f1408eeb-4e97-4548-bc69-61ff83838b1d/download/coloniascdmx.geojson"
+if not os.path.exists(COLONIAS_FILE):
+    r = requests.get(url_colonias)
+    if r.status_code == 200:
+        with open(COLONIAS_FILE,"wb") as f: f.write(r.content)
 
-plt.plot(sem_risk["semestre"], sem_risk["abandono_prob"]*100, marker="o", color="green")
-plt.title("Riesgo promedio de abandono por semestre (predicho)")
-plt.xlabel("Semestre")
-plt.ylabel("Probabilidad de abandono (%)")
-plt.grid(True)
-plt.savefig(os.path.join(OUT_DIR, "figura5_riesgo_por_semestre.png"))
-plt.close()
+try:
+    gdf_colonias = gpd.read_file(COLONIAS_FILE)
+    risk_by_colonia = merged.groupby("colonia_residencia")["abandono_prob"].mean().reset_index()
+    risk_by_colonia.columns = ["colonia","abandono_prob"]
 
-sem_risk.to_csv(os.path.join(OUT_DIR,"riesgo_por_semestre.csv"), index=False)
+    gdf_colonias = gdf_colonias.merge(risk_by_colonia, left_on="colonia", right_on="colonia", how="left")
 
+    fig, ax = plt.subplots(figsize=(10,10))
+    gdf_colonias.plot(column="abandono_prob", cmap="Reds", legend=True, ax=ax,
+                      legend_kwds={'label': "Prob. abandono", 'orientation': "vertical"})
+    ax.set_title("Riesgo promedio de abandono por colonia")
+    plt.axis("off")
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUT_DIR,"figura5_colonias_riesgo.png"))
+    plt.close()
+except Exception as e:
+    print("⚠️ Map colonias skipped:", e)
 
-print(f"\n✅ Analysis complete. Outputs saved in {OUT_DIR}")
+# --- Map with planteles (URC campuses) ---
+url_alc = "https://datos.cdmx.gob.mx/dataset/bae265a8-d1f6-4614-b399-4184bc93e027/resource/deb5c583-84e2-4e07-a706-1b3a0dbc99b0/download/limite-de-las-alcaldas.json"
+ALC_FILE = "limite-de-las-alcaldas.json"
+if not os.path.exists(ALC_FILE):
+    r = requests.get(url_alc)
+    if r.status_code == 200:
+        with open(ALC_FILE,"wb") as f: f.write(r.content)
+
+try:
+    gdf_alc = gpd.read_file(ALC_FILE)
+
+    planteles = pd.DataFrame({
+        "nombre": ["URC Norte","URC Centro","URC Sur"],
+        "lon": [-99.14,-99.10,-99.16],
+        "lat": [19.50,19.43,19.29],
+        "color": ["red","blue","green"]
+    })
+
+    fig, ax = plt.subplots(figsize=(10,10))
+    gdf_alc.plot(ax=ax, color="whitesmoke", edgecolor="gray")
+
+    for _, row in planteles.iterrows():
+        ax.scatter(row["lon"], row["lat"], c=row["color"], s=80, marker="o", label=row["nombre"])
+        ax.text(row["lon"], row["lat"], row["nombre"], fontsize=8,
+                ha="center", va="bottom",
+                bbox=dict(boxstyle="round,pad=0.2", fc="white", ec="none"))
+
+    ax.legend()
+    ax.set_title("Planteles URC en CDMX")
+    plt.axis("off")
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUT_DIR,"figura6_alcaldias.png"))
+    plt.close()
+except Exception as e:
+    print("⚠️ Map planteles skipped:", e)
+
+print(f"✅ Analysis complete. Outputs saved in {OUT_DIR}")
