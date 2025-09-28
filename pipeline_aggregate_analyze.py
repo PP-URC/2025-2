@@ -134,4 +134,16 @@ plt.tight_layout()
 plt.savefig(os.path.join(OUT_DIR, "logit_coefficients.png"))
 plt.close()
 
+
+
+coefs = coefs[coefs["var"] != "const"].sort_values("coef")
+
+plt.figure(figsize=(6,4))
+plt.barh(coefs["var"], coefs["coef"], color="steelblue")
+plt.title("Logistic regression coefficients (no const)")
+plt.xlabel("Effect on dropout log-odds")
+plt.tight_layout()
+plt.savefig(os.path.join(OUT_DIR, "logit_coefficients.png"))
+plt.close()
+
 print("Pipeline finished. Outputs in", OUT_DIR)
