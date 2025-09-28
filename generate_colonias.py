@@ -16,9 +16,8 @@ N_STUDENTS     = 1000
 SEMESTRES_MAX  = 8
 DB_PATH        = "unrc.db"
 
-COLONIAS_FILE  = "coloniascdmx.geojson"
-COLONIAS_URL   = ("https://datos.cdmx.gob.mx/dataset/04a1900a-0c2f-41ed-94dc-3d2d5bad4065/"
-                  "resource/f1408eeb-4e97-4548-bc69-61ff83838b1d/download/coloniascdmx.geojson")
+COLONIAS_FILE  = "catlogo-de-colonias.json"
+COLONIAS_URL   = ("https://datos.cdmx.gob.mx/dataset/02c6ce99-dbd8-47d8-aee1-ae885a12bb2f/resource/026b42d3-a609-44c7-a83d-22b2150caffc/download/catlogo-de-colonias.json")
 
 # -------------------------
 # Download + load GeoJSON (always use GeoPandas)
