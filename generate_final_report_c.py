@@ -8,7 +8,7 @@ import statsmodels.api as sm
 from sklearn.metrics import roc_curve, auc
 from docx import Document
 from docx.shared import Inches
-from genreate_colonias import COLONIAS_FILE, COLONIAS_URL
+from generate_colonias import COLONIAS_FILE, COLONIAS_URL
 OUT_DIR = "out_pipeline"
 os.makedirs(OUT_DIR, exist_ok=True)
 
