@@ -8,7 +8,7 @@ import os
 import requests, os
 
 url = "https://datos.cdmx.gob.mx/dataset/04a1900a-0c2f-41ed-94dc-3d2d5bad4065/resource/f1408eeb-4e97-4548-bc69-61ff83838b1d/download/coloniascdmx.geojson"
-out_file = "/content/2025-2/catlogo-de-colonias.json"
+out_file = "catlogo-de-colonias.json"
 
 if not os.path.exists(out_file):
     r = requests.get(url)
