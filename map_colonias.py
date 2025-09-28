@@ -18,7 +18,7 @@ os.makedirs(OUT_DIR, exist_ok=True)
 
 # --- Ensure GeoJSON ---
 BASE_DIR = os.path.dirname(__file__)
-GEOJSON_FILE = os.path.join(BASE_DIR, "coloniascdmx.geojson")
+GEOJSON_FILE = os.path.join(BASE_DIR, "catlogo-de-colonias.json")
 
 if not os.path.exists(GEOJSON_FILE):
     url = "https://datos.cdmx.gob.mx/dataset/02c6ce99-dbd8-47d8-aee1-ae885a12bb2f/resource/026b42d3-a609-44c7-a83d-22b2150caffc/download/catlogo-de-colonias.json"
