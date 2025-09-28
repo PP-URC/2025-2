@@ -28,7 +28,7 @@ else:
 
 # --- Load colonias catalog as plain JSON ---
 print("📥 Loading colonias catalog...")
-with open(COLONIAS_FILE, "r", encoding="latin-1") as f:   # latin-1 fixes decode error
+with open(COLONIAS_FILE, "r") as f: 
     data = json.load(f)
 
 # If it's a FeatureCollection, adapt; else it's tabular JSON
