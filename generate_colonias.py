@@ -44,23 +44,34 @@ rows = []
 for sid, row in students.iterrows():
     n_sem = np.random.randint(1, SEMESTRES_MAX+1)  # how many semesters completed
     for sem in range(1, n_sem+1):
-        promedio = np.clip(np.random.normal(8, 1), 5, 10)
-        materias = np.random.randint(4,7)
-        aprobadas = np.random.binomial(materias, 0.8)
-        reprobadas = materias - aprobadas
+        promedio   = np.clip(np.random.normal(8, 1), 5, 10)
         asistencia = np.clip(np.random.normal(85, 10), 40, 100)
-        beca = np.random.choice([0,1], p=[0.7,0.3])
-        tutoria = np.random.choice([0,1], p=[0.8,0.2])
+        materias   = np.random.randint(4,7)
+        aprobadas  = np.random.binomial(materias, 0.8)
+        reprobadas = materias - aprobadas
+        beca       = np.random.choice([0,1], p=[0.7,0.3])
+        tutoria    = np.random.choice([0,1], p=[0.8,0.2])
 
-        # Base dropout probability
-        base_p = 0.1
-        if promedio < 7: base_p += 0.25
-        if asistencia < 70: base_p += 0.15
-        if row["horas_trabajo"] > 20: base_p += 0.1
-        if row["traslado_min"] > 60: base_p += 0.1
-        base_p = min(base_p, 0.9)
+        # 2) dropout logit with strong, interpretable weights
+        #    higher in early semesters; lower promedio & asistencia, high work/commute raise risk
+        #    NOTE: these weights are chosen to give a wide spread of probabilities (for “cool” demo)
+        sem_effect = {1: 0.8, 2: 0.6, 3: 0.3, 4: 0.1, 5: -0.1, 6: -0.3, 7: -0.5, 8: -0.7}.get(sem, -0.5)
 
-        abandono = np.random.binomial(1, base_p) if sem == n_sem else 0
+        z = (
+      -1.1                  # intercept -> ~25–30% baseline before effects
+      + sem_effect          # early semesters riskier
+      - 0.9*(promedio - 8)  # each point above/below 8 shifts risk a lot
+      - 0.03*(asistencia - 85)
+      + 0.04*(row["horas_trabajo"])     # 0..40h -> up to +1.6 in log-odds
+      + 0.02*(row["traslado_min"] - 45) # 15..90 -> ~(-0.6..+0.9)
+            )
+
+          p_dropout = 1.0/(1.0 + np.exp(-z))
+
+          # Only the last observed semester can realize dropout
+          abandono = np.random.binomial(1, p_dropout) if sem == n_sem else 0
+
+       
 
         rows.append({
             "id": len(rows)+1,
