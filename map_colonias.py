@@ -26,6 +26,47 @@ for ft in features:
 
 gdf_colonias = gpd.GeoDataFrame(rows, geometry="geometry", crs="EPSG:4326")
 
+# --- Add campus (plantel) locations ---
+# Example coordinates (replace with real ones if you have them)
+planteles = pd.DataFrame({
+    "plantel": [
+        "Azcapotzalco", 
+        "Coyoacán", 
+        "Gustavo A. Madero", 
+        "Iztapalapa"
+    ],
+    "lon": [-99.185, -99.150, -99.120, -99.080],
+    "lat": [19.490, 19.330, 19.470, 19.350]
+})
+
+gdf_planteles = gpd.GeoDataFrame(
+    planteles, 
+    geometry=gpd.points_from_xy(planteles["lon"], planteles["lat"]),
+    crs="EPSG:4326"
+)
+
+# --- Plot colonias + planteles ---
+fig, ax = plt.subplots(1, 1, figsize=(12, 12))
+gdf.plot(column="abandono", cmap="Reds", linewidth=0.5, edgecolor="black",
+         legend=True, ax=ax, missing_kwds={"color": "lightgrey", "label": "Sin datos"})
+
+# plot planteles as black dots
+gdf_planteles.plot(ax=ax, color="black", markersize=40, marker="o")
+
+# add labels
+for x, y, label in zip(gdf_planteles.geometry.x, gdf_planteles.geometry.y, gdf_planteles["plantel"]):
+    ax.text(x, y, label, fontsize=8, ha="left", va="bottom", color="black")
+
+ax.set_title("Tasa de abandono por colonia con planteles", fontsize=16)
+
+out_file = os.path.join(OUT_DIR, "mapa_abandono_colonias_con_planteles.png")
+plt.savefig(out_file, dpi=150)
+plt.close()
+
+print(f"✅ Map with planteles saved to {out_file}")
+
+
+
 # Ensure column is called 'colonia_residencia'
 if "colonia" in gdf_colonias.columns:
     gdf_colonias = gdf_colonias.rename(columns={"colonia": "colonia_residencia"})
