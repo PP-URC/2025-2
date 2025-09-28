@@ -15,7 +15,7 @@ SEMESTRES_MAX = 8
 
 fake = Faker("es_MX")
 
-# --- Download colonias catalog ---
+# --- Download colonias catalog if not present ---
 url = "https://datos.cdmx.gob.mx/dataset/04a1900a-0c2f-41ed-94dc-3d2d5bad4065/resource/f1408eeb-4e97-4548-bc69-61ff83838b1d/download/coloniascdmx.geojson"
 if not os.path.exists(COLONIAS_FILE):
     print("⬇️ Downloading colonias catalog...")
@@ -25,26 +25,32 @@ if not os.path.exists(COLONIAS_FILE):
         f.write(r.content)
     print(f"✅ Saved {COLONIAS_FILE}")
 else:
-    print("Already have", COLONIAS_FILE)
+    print(f"Already have {COLONIAS_FILE}")
 
 # --- Load colonias catalog ---
 print("📥 Loading colonias catalog...")
-gdf_colonias = pd.read_json(COLONIAS_FILE) if COLONIAS_FILE.endswith(".json") else None
-if gdf_colonias is None or "features" in gdf_colonias.columns or "features" in gdf_colonias.to_dict():
-    with open(COLONIAS_FILE, "r", encoding="utf-8") as f:
-        raw = json.load(f)
-    gdf_colonias = pd.DataFrame([ft["properties"] for ft in raw["features"]])
+with open(COLONIAS_FILE, "r", encoding="utf-8") as f:
+    raw = json.load(f)
 
-# Normalize names
+if "features" in raw:  # GeoJSON format
+    gdf_colonias = pd.DataFrame([ft["properties"] for ft in raw["features"]])
+else:  # fallback: tabular JSON
+    gdf_colonias = pd.DataFrame(raw)
+
+# normalize expected names
 colonias = gdf_colonias.rename(columns={
     "colonia": "colonia_residencia",
     "alc": "alcaldia"
 })
-colonias = colonias[["colonia_residencia", "alcaldia"]].drop_duplicates()
+if "colonia_residencia" not in colonias.columns:
+    colonias["colonia_residencia"] = colonias.iloc[:, 0]
+if "alcaldia" not in colonias.columns:
+    colonias["alcaldia"] = "DESCONOCIDA"
 
+colonias = colonias[["colonia_residencia", "alcaldia"]].drop_duplicates()
 print("✅ Loaded", len(colonias), "colonias")
 
-# --- Synthetic marginación index ---
+# --- Assign synthetic marginación index ---
 marginacion_levels = [-2, -1, 0, 1, 2]   # -2=very low, +2=very high
 marginacion_probs  = [0.35, 0.30, 0.20, 0.10, 0.05]
 
@@ -73,7 +79,7 @@ students = students.merge(colonias[["colonia_residencia","marginacion_index"]],
 
 # --- Generate inscripciones ---
 rows = []
-for sid, row in students.iterrows():
+for _, row in students.iterrows():
     n_sem = np.random.randint(1, SEMESTRES_MAX+1)
     for sem in range(1, n_sem+1):
         promedio   = np.clip(np.random.normal(8, 1), 5, 10)
@@ -84,17 +90,17 @@ for sid, row in students.iterrows():
         beca       = np.random.choice([0,1], p=[0.7,0.3])
         tutoria    = np.random.choice([0,1], p=[0.8,0.2])
 
-        sem_effect = {1: 1.2, 2: 0.8, 3: 0.4, 4: 0.0,
-                      5: -0.4, 6: -0.8, 7: -1.2, 8: -1.6}.get(sem, -0.5)
+        sem_effect = {1: 0.8, 2: 0.6, 3: 0.3, 4: 0.1,
+                      5: -0.1, 6: -0.3, 7: -0.5, 8: -0.7}.get(sem, -0.5)
 
         z = (
-            -1.3
+            -1.1
             + sem_effect
-            - 1.0*(promedio - 8)
-            - 0.05*(asistencia - 85)
-            + 0.05*(row["horas_trabajo"])
-            + 0.03*(row["traslado_min"] - 45)
-            + 0.7 * row["marginacion_index"]
+            - 0.9*(promedio - 8)
+            - 0.03*(asistencia - 85)
+            + 0.04*(row["horas_trabajo"])
+            + 0.02*(row["traslado_min"] - 45)
+            + 0.5 * row["marginacion_index"]
         )
 
         p_dropout = 1.0/(1.0 + np.exp(-z))
@@ -111,8 +117,7 @@ for sid, row in students.iterrows():
             "asistencia_pct": asistencia,
             "beca": beca,
             "apoyo_tutoria": tutoria,
-            "abandono": abandono,
-            "p_abandono": p_dropout
+            "abandono": abandono
         })
 
 inscripciones = pd.DataFrame(rows)
