@@ -34,7 +34,7 @@ else:
 
 # Always rea
 
-with openCOLONIAS_FILE, "rb") as f:
+with open(COLONIAS_FILE, "rb") as f:
     print(f.read(200))
 
 
