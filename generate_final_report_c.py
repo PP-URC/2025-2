@@ -88,6 +88,17 @@ top10 = last_rows.sort_values("abandono_prob", ascending=False).head(10)[
 ].copy()
 top10.to_csv(os.path.join(OUT_DIR,"top10_risk_students.csv"), index=False)
 
+
+
+# ---- least 10 risk students (last available semester per student)
+last_rows = merged.sort_values(["student_id","semestre"]).groupby("student_id").tail(1)
+least10 = last_rows.sort_values("abandono_prob").head(10)[
+    ["student_id","sexo","colonia_residencia","alcaldia",
+     "promedio","asistencia_pct","horas_trabajo","traslado_min","abandono_prob"]
+].copy()
+least10.to_csv(os.path.join(OUT_DIR,"least10_risk_students.csv"), index=False)
+
+
 # Annotated bar chart
 plt.figure(figsize=(10,6))
 ylabels = top10["student_id"].astype(str)
