@@ -34,7 +34,7 @@ else:
 
 # Always rea
 
-with open("coloniascdmx.geojson","rb") as f:
+with openCOLONIAS_FILE, "rb") as f:
     print(f.read(200))
 
 
