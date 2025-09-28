@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import json
 from shapely.geometry import shape
 import os
+import matplotlib.patheffects as path_effects
+
 
 DB_PATH = "unrc.db"
 COLONIAS_FILE = "catlogo-de-colonias.json"
