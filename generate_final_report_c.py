@@ -1,107 +1,56 @@
-"""
-generate_final_report.py
--------------------
-1. Load DB (unrc.db)
-2. Use abandono from generator (don't overwrite)
-3. Logistic regression
-4. Save figures (PNG) into ./out_pipeline
-5. Save Top-10 risk list
-"""
-
+# generate_final_report_c.py
 import sqlite3
 import pandas as pd
-import numpy as np
-import os
 import matplotlib.pyplot as plt
-from statsmodels.discrete.discrete_model import Logit
-from statsmodels.tools import add_constant
-from sklearn.metrics import roc_curve, auc
+import geopandas as gpd
+import matplotlib as mpl
 
 DB_PATH = "unrc.db"
-OUT_DIR = "./out_pipeline"
-os.makedirs(OUT_DIR, exist_ok=True)
+COLONIAS_FILE = "catlogo-de-colonias.json"
 
 # --- Load data ---
 conn = sqlite3.connect(DB_PATH)
 students = pd.read_sql("SELECT * FROM students_raw", conn)
-panel = pd.read_sql("SELECT * FROM inscripciones", conn)
+inscripciones = pd.read_sql("SELECT * FROM inscripciones", conn)
 conn.close()
 
-# Make sure it's sorted
-panel = panel.sort_values(["student_id","semestre"])
+# Merge for analysis
+merged = inscripciones.merge(students, on="student_id", how="left")
 
-# --- Aggregate dropout rates ---
-agg_sem = panel.groupby("semestre")["abandono"].mean().reset_index()
-agg_sem.rename(columns={"abandono":"abandono_rate"}, inplace=True)
+# --- Summary statistics ---
+abandono_rate = merged["abandono"].mean()
+print(f"📊 Tasa global de abandono: {abandono_rate:.2%}")
 
-# --- Logistic regression ---
-merged = panel.merge(
-    students[["student_id","horas_trabajo","traslado_min"]],
-    on="student_id", how="left"
-)
+# --- Choropleth map ---
+gdf = gpd.read_file(COLONIAS_FILE)
+gdf = gdf.rename(columns={"colonia": "colonia_residencia"})
 
-predictors = ["promedio","asistencia_pct","horas_trabajo","traslado_min"]
-X = add_constant(merged[predictors], has_constant="add")
-y = merged["abandono"]
+dropout_map = merged.groupby("colonia_residencia")["abandono"].mean().reset_index()
+gdf = gdf.merge(dropout_map, on="colonia_residencia", how="left")
 
-logit = Logit(y, X).fit(disp=False)
+fig, ax = plt.subplots(figsize=(12,12))
+gdf.plot(column="abandono", cmap="RdYlGn_r", legend=True,
+         legend_kwds={"label":"Tasa de abandono promedio"},
+         ax=ax, edgecolor="black", linewidth=0.2)
 
-print("\n📊 Logistic regression summary:")
-print(logit.summary())
+# Planteles demo coords
+planteles = pd.DataFrame({
+    "plantel":["Plantel Norte","Plantel Centro","Plantel Sur"],
+    "lon":[-99.15,-99.12,-99.18],
+    "lat":[19.5,19.4,19.3]
+})
+gdfp = gpd.GeoDataFrame(planteles,
+                        geometry=gpd.points_from_xy(planteles.lon, planteles.lat),
+                        crs="EPSG:4326")
 
-# --- Save figures ---
+gdfp.plot(ax=ax, color="blue", markersize=40)
 
-# Figure 1: Dropout by semester
-plt.plot(agg_sem["semestre"], agg_sem["abandono_rate"], marker="o")
-plt.title("Tasa de abandono por semestre")
-plt.xlabel("Semestre")
-plt.ylabel("Proporción de abandono")
-plt.grid(True)
-plt.savefig(os.path.join(OUT_DIR, "figura1_abandono_por_semestre.png"))
-plt.close()
+for _, row in gdfp.iterrows():
+    ax.text(row.geometry.x, row.geometry.y, row["plantel"],
+            fontsize=9, color="white", ha="center", va="center",
+            path_effects=[mpl.patheffects.withStroke(linewidth=2, foreground="black")])
 
-# Figure 2: Logistic regression coefficients
-coefs = pd.DataFrame({"var": X.columns, "coef": logit.params})
-coefs = coefs[coefs["var"]!="const"].sort_values("coef")
+ax.set_title("Tasa de abandono por colonia con planteles", fontsize=14)
+plt.savefig("out_pipeline/map_colonias.png", dpi=300)
 
-plt.barh(coefs["var"], coefs["coef"], color="steelblue")
-plt.title("Coeficientes de la regresión logística")
-plt.xlabel("Efecto en log-odds de abandono")
-plt.tight_layout()
-plt.savefig(os.path.join(OUT_DIR, "figura2_coef_logistica.png"))
-plt.close()
-
-# Figure 3: ROC curve
-y_pred = logit.predict(X)
-fpr, tpr, _ = roc_curve(y, y_pred)
-roc_auc = auc(fpr, tpr)
-
-plt.plot(fpr, tpr, color="darkorange", lw=2, label=f"ROC (área = {roc_auc:.2f})")
-plt.plot([0,1],[0,1], color="navy", lw=2, linestyle="--")
-plt.xlabel("Tasa de falsos positivos")
-plt.ylabel("Tasa de verdaderos positivos")
-plt.title("Curva ROC")
-plt.legend(loc="lower right")
-plt.savefig(os.path.join(OUT_DIR, "figura3_roc.png"))
-plt.close()
-
-# --- Risk scoring (last semester only) ---
-idx_last = merged.groupby("student_id")["semestre"].idxmax()
-risk_df = merged.loc[idx_last, ["student_id","semestre"]].copy()
-risk_df["prob_abandono"] = logit.predict(add_constant(
-    merged.loc[idx_last, predictors], has_constant="add"
-))
-
-risk_df = risk_df.merge(
-    students[["student_id","sexo","colonia_residencia","horas_trabajo","traslado_min"]],
-    on="student_id", how="left"
-)
-
-risk_top10 = risk_df.sort_values("prob_abandono", ascending=False).head(10)
-risk_df.sort_values("prob_abandono", ascending=False).to_csv(
-    os.path.join(OUT_DIR, "risk_by_student.csv"), index=False
-)
-
-print("\n✅ Analysis complete. Figures + risk CSV saved in", OUT_DIR)
-print("\nTop 10 students at risk:")
-print(risk_top10)
+print("✅ Map saved to out_pipeline/map_colonias.png")
