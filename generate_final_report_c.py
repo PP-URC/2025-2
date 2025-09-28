@@ -109,4 +109,18 @@ plt.tight_layout()
 plt.savefig(os.path.join(OUT_DIR,"figura4_top10_risk.png"))
 plt.close()
 
+# --- Risk per semester (average predicted prob) ---
+sem_risk = merged.groupby("semestre")["abandono_prob"].mean().reset_index()
+
+plt.plot(sem_risk["semestre"], sem_risk["abandono_prob"]*100, marker="o", color="green")
+plt.title("Riesgo promedio de abandono por semestre (predicho)")
+plt.xlabel("Semestre")
+plt.ylabel("Probabilidad de abandono (%)")
+plt.grid(True)
+plt.savefig(os.path.join(OUT_DIR, "figura5_riesgo_por_semestre.png"))
+plt.close()
+
+sem_risk.to_csv(os.path.join(OUT_DIR,"riesgo_por_semestre.csv"), index=False)
+
+
 print(f"\n✅ Analysis complete. Outputs saved in {OUT_DIR}")
