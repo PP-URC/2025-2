@@ -45,25 +45,7 @@ gdf_planteles = gpd.GeoDataFrame(
     crs="EPSG:4326"
 )
 
-# --- Plot colonias + planteles ---
-fig, ax = plt.subplots(1, 1, figsize=(12, 12))
-gdf.plot(column="abandono", cmap="Reds", linewidth=0.5, edgecolor="black",
-         legend=True, ax=ax, missing_kwds={"color": "lightgrey", "label": "Sin datos"})
 
-# plot planteles as black dots
-gdf_planteles.plot(ax=ax, color="black", markersize=40, marker="o")
-
-# add labels
-for x, y, label in zip(gdf_planteles.geometry.x, gdf_planteles.geometry.y, gdf_planteles["plantel"]):
-    ax.text(x, y, label, fontsize=8, ha="left", va="bottom", color="black")
-
-ax.set_title("Tasa de abandono por colonia con planteles", fontsize=16)
-
-out_file = os.path.join(OUT_DIR, "mapa_abandono_colonias_con_planteles.png")
-plt.savefig(out_file, dpi=150)
-plt.close()
-
-print(f"✅ Map with planteles saved to {out_file}")
 
 
 
@@ -95,14 +77,22 @@ dropout_map = merged.groupby("colonia_residencia")["abandono"].mean().reset_inde
 # --- Join with polygons ---
 gdf = gdf_colonias.merge(dropout_map, on="colonia_residencia", how="left")
 
-# --- Plot ---
+# --- Plot colonias + planteles ---
 fig, ax = plt.subplots(1, 1, figsize=(12, 12))
 gdf.plot(column="abandono", cmap="Reds", linewidth=0.5, edgecolor="black",
          legend=True, ax=ax, missing_kwds={"color": "lightgrey", "label": "Sin datos"})
-ax.set_title("Tasa de abandono por colonia (sintético)", fontsize=16)
 
-out_file = os.path.join(OUT_DIR, "mapa_abandono_colonias.png")
+# plot planteles as black dots
+gdf_planteles.plot(ax=ax, color="black", markersize=40, marker="o")
+
+# add labels
+for x, y, label in zip(gdf_planteles.geometry.x, gdf_planteles.geometry.y, gdf_planteles["plantel"]):
+    ax.text(x, y, label, fontsize=8, ha="left", va="bottom", color="black")
+
+ax.set_title("Tasa de abandono por colonia con planteles", fontsize=16)
+
+out_file = os.path.join(OUT_DIR, "mapa_abandono_colonias_con_planteles.png")
 plt.savefig(out_file, dpi=150)
 plt.close()
 
-print(f"✅ Map saved to {out_file}")
+print(f"✅ Map with planteles saved to {out_file}")
