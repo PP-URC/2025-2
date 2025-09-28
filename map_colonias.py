@@ -1,49 +1,25 @@
-# map_colonias.py
-import sqlite3, os
-import pandas as pd
+import json
 import geopandas as gpd
-import matplotlib.pyplot as plt
+from shapely.geometry import shape
 
-DB_PATH = "unrc.db"
 COLONIAS_FILE = "catlogo-de-colonias.json"
-OUT_DIR = "./out_pipeline"
-os.makedirs(OUT_DIR, exist_ok=True)
 
-# --- Leer colonias ---
-gdf = gpd.read_file(COLONIAS_FILE)
-print("Campos colonias:", gdf.columns)
+with open(COLONIAS_FILE, "r", encoding="utf-8") as f:
+    raw = json.load(f)
 
-# --- Cargar DB ---
-conn = sqlite3.connect(DB_PATH)
-students = pd.read_sql("SELECT * FROM students_raw", conn)
-panel = pd.read_sql("SELECT * FROM inscripciones", conn)
-conn.close()
+# Asegurarnos que tenga features
+features = raw["features"]
 
-# --- Derivar abandono ---
-panel = panel.sort_values(["student_id","semestre"])
-panel["abandono"] = 0
-for sid, group in panel.groupby("student_id"):
-    max_sem = group["semestre"].max()
-    if max_sem < 8:
-        panel.loc[(panel["student_id"]==sid) &
-                  (panel["semestre"]==max_sem),"abandono"] = 1
+# Convertir cada feature en registro con props + geometry
+rows = []
+for ft in features:
+    props = ft["properties"]
+    geom = shape(ft["geometry"])
+    props["geometry"] = geom
+    rows.append(props)
 
-merged = panel.merge(students[["student_id","colonia_residencia"]],
-                     on="student_id")
-dropout_map = merged.groupby("colonia_residencia")["abandono"].mean().reset_index()
+# Crear GeoDataFrame
+gdf_colonias = gpd.GeoDataFrame(rows, geometry="geometry", crs="EPSG:4326")
 
-# --- Unir ---
-merge_key = "nom_col"  # nombre de la colonia en el GeoJSON
-gdf = gdf.merge(dropout_map, left_on=merge_key,
-                right_on="colonia_residencia", how="left")
-
-# --- Graficar ---
-fig, ax = plt.subplots(figsize=(12,10))
-gdf.plot(column="abandono", cmap="Reds", legend=True,
-         edgecolor="black", ax=ax, linewidth=0.1)
-ax.set_title("Tasa de abandono por colonia (URC - datos sintéticos)")
-
-plt.savefig(os.path.join(OUT_DIR,"mapa_colonias.png"), dpi=200)
-plt.close()
-
-print("✅ Mapa guardado en out_pipeline/mapa_colonias.png")
+print(gdf_colonias.shape)
+print(gdf_colonias.head())
