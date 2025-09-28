@@ -38,6 +38,10 @@ if "abandono" not in panel.columns:
 if "stopout" not in panel.columns:
     panel["stopout"] = 0
 
+print(panel.columns.tolist())
+print(panel.head())
+
+
 # --- 2. Aggregate ---
 agg_sem = panel.groupby("semestre").agg(
     abandono_sem=("abandono","mean"),
