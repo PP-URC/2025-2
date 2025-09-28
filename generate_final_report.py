@@ -31,7 +31,8 @@ os.makedirs(OUT_DIR, exist_ok=True)
 conn = sqlite3.connect(DB_PATH)
 students = pd.read_sql("SELECT * FROM students_raw", conn)
 panel = pd.read_sql("SELECT * FROM inscripciones", conn)
-
+panel = panel.merge(students[["student_id","horas_trabajo","traslado_min"]],
+                    on="student_id", how="left")
 # Derive abandono if not exists
 if "abandono" not in panel.columns:
     panel["abandono"] = 0
