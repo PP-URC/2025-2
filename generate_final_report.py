@@ -46,7 +46,7 @@ print(panel.head())
 agg_sem = panel.groupby("semestre").agg(
     abandono_sem=("abandono","mean"),
     stopout_sem=("stopout","mean"),
-    n=("student_id","count")
+    n=("id_estudiante","count")
 ).reset_index()
 
 # --- 3. Logistic regression ---
