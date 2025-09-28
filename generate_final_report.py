@@ -105,6 +105,7 @@ plt.savefig(os.path.join(OUT_DIR, "figura3_roc.png"))
 plt.close()
 
 # --- Figure 4: Top 10 students at risk ---
+top10 = student_risk.head(10)
 top10_details = top10.merge(students, on="student_id", how="left")
 top10_details = top10_details.merge(
     panel.groupby("student_id")[["promedio","asistencia_pct"]].mean().reset_index(),
