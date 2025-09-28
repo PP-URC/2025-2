@@ -9,6 +9,8 @@ import sqlite3, os
 import pandas as pd
 import numpy as np
 import statsmodels.api as sm
+import matplotlib.pyplot as plt
+
 
 DB_PATH = "unrc.db"
 OUT_DIR = "./out_pipeline"
@@ -98,5 +100,38 @@ cum_dropout = panel.groupby("id_estudiante")["dropout_event"].max().mean()
 per_sem = panel.groupby("semestre")["dropout_event"].mean().round(3).to_dict()
 with open(os.path.join(OUT_DIR, "README.txt"), "w") as f:
     f.write(f"Cumulative dropout (derived): {cum_dropout:.2%}\nPer-semester dropout: {per_sem}\nStop-out share per semester also in agg_per_semester.csv\n")
+
+
+plt.figure()
+agg_sem.plot(x="semestre", y="abandono_sem", marker="o", legend=False)
+plt.title("Dropout rate per semester")
+plt.ylabel("Dropout rate")
+plt.xlabel("Semester")
+plt.grid(True)
+plt.savefig(os.path.join(OUT_DIR, "dropout_per_semester.png"))
+plt.close()
+
+plt.figure()
+agg_sem.plot(x="semestre", y="stopout_sem", marker="o", color="orange", legend=False)
+plt.title("Stopout rate per semester")
+plt.ylabel("Stopout rate")
+plt.xlabel("Semester")
+plt.grid(True)
+plt.savefig(os.path.join(OUT_DIR, "stopout_per_semester.png"))
+plt.close()
+
+coefs = pd.DataFrame({
+    "var": X.columns,
+    "coef": logit.params,
+    "pval": logit.pvalues
+}).sort_values("coef")
+
+plt.figure(figsize=(6,4))
+plt.barh(coefs["var"], coefs["coef"], color="steelblue")
+plt.title("Logistic regression coefficients")
+plt.xlabel("Effect on dropout log-odds")
+plt.tight_layout()
+plt.savefig(os.path.join(OUT_DIR, "logit_coefficients.png"))
+plt.close()
 
 print("Pipeline finished. Outputs in", OUT_DIR)
