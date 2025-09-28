@@ -23,5 +23,5 @@ gdf_colonias = gpd.GeoDataFrame(rows, geometry="geometry", crs="EPSG:4326")
 print("Columns in colonias file:", gdf_colonias.columns)
 print(gdf_colonias.head())
 
-print(gdf_colonias.shape)
+print(gdf_colonias.columns)
 print(gdf_colonias.head())
