@@ -47,6 +47,7 @@ panel.to_csv(os.path.join(OUT_DIR, "panel_raw.csv"), index=False)
 max_sem_by_student = panel.groupby("id_estudiante")["semestre"].max().rename("max_sem")
 panel = panel.merge(max_sem_by_student, on="id_estudiante", how="left")
 
+panel["semestre_next"] = panel["semestre"] + 1
 # next_active flag: does (id_estudiante, semestre+1) exist?
 next_key = panel[["id_estudiante","semestre"]].copy()
 next_key["semestre_next"] = next_key["semestre"] + 1
