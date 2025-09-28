@@ -142,11 +142,13 @@ ax.axis("off")
 plt.tight_layout()
 f5 = os.path.join(OUT_DIR,"figura5_colonias_riesgo.png")
 plt.savefig(f5); plt.close()
-"""
+
 # ---- Figure 6: Alcaldías + planteles
 ALC_FILE = "limite-de-las-alcaldias.json"
 ALC_URL  = ("https://datos.cdmx.gob.mx/dataset/bae265a8-d1f6-4614-b399-4184bc93e027/"
             "resource/deb5c583-84e2-4e07-a706-1b3a0dbc99b0/download/limite-de-las-alcaldas.json")
+
+
 if not os.path.exists(ALC_FILE):
     r = requests.get(ALC_URL, timeout=90)
     r.raise_for_status()
@@ -239,7 +241,7 @@ doc.add_paragraph(
 
 docx_path = os.path.join(OUT_DIR, "URC_informe_ejecutivo.docx")
 doc.save(docx_path)
-
+"""
 print("\n✅ Done. Outputs in:", OUT_DIR)
 print(" -", os.path.basename(f1))
 print(" -", os.path.basename(f2))
