@@ -3,7 +3,7 @@ import os, sqlite3, requests, unicodedata
 import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
-from geerate_colinas import COLONIAS_FILE, COLONIAS_URL
+from generate_colonias import COLONIAS_FILE, COLONIAS_URL
 OUT_DIR = "out_pipeline"
 os.makedirs(OUT_DIR, exist_ok=True)
 
