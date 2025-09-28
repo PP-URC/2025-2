@@ -45,7 +45,7 @@ panel.to_csv(os.path.join(OUT_DIR, "panel_raw.csv"), index=False)
 
 # 4) Derive dropout & stop-out
 # For each student-semester t, dropout_event=1 if no record at t+1 AND student never reappears later (no record > t+1).
-# stopout_event=1 if no record at t+1 BUT reappears later.
+
 max_sem_by_student = panel.groupby("id_estudiante")["semestre"].max().rename("max_sem")
 panel = panel.merge(max_sem_by_student, on="id_estudiante", how="left")
 
@@ -72,7 +72,7 @@ TARGET_MAX = int(panel["semestre"].max())  # if generator used 8, this will be 8
 panel["graduated"] = (panel["max_sem"] >= TARGET_MAX).astype(int)
 
 # Events
-panel["stopout_event"] = ((panel["next_exists"]==0) & (panel["reappears_later"]==1)).astype(int)
+
 panel["dropout_event"] = ((panel["next_exists"]==0) & (panel["reappears_later"]==0) & (panel["graduated"]==0)).astype(int)
 
 panel.to_csv(os.path.join(OUT_DIR, "panel_with_events.csv"), index=False)
@@ -80,7 +80,7 @@ panel.to_csv(os.path.join(OUT_DIR, "panel_with_events.csv"), index=False)
 # 5) Aggregates
 agg_sem = panel.groupby("semestre").agg(
     abandono_sem=("dropout_event","mean"),
-    stopout_sem=("stopout_event","mean"),
+    
     promedio_sem=("promedio_semestre","mean"),
     asistencia_sem=("asistencia_pct","mean")
 ).reset_index()
@@ -111,15 +111,7 @@ plt.grid(True)
 plt.savefig(os.path.join(OUT_DIR, "figura1_abandono_por_semestre.png"))
 plt.close()
 
-# --- Figura 2: Tasa de stop-out por semestre ---
-plt.figure()
-agg_sem.plot(x="semestre", y="stopout_sem", marker="o", color="orange", legend=False)
-plt.title("Tasa de reingreso temporal (stop-out) por semestre")
-plt.ylabel("Proporción de stop-out")
-plt.xlabel("Semestre")
-plt.grid(True)
-plt.savefig(os.path.join(OUT_DIR, "figura2_stopout_por_semestre.png"))
-plt.close()
+
 
 # --- Figura 3: Coeficientes de la regresión logística ---
 coefs = pd.DataFrame({
