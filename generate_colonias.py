@@ -37,21 +37,17 @@ N = 1000
 students = pd.DataFrame({
     "student_id": range(1, N+1),
     "sexo": np.random.choice(["M","F"], size=N),
-    "fecha_nacimiento": pd.to_datetime(
-        np.random.randint(pd.Timestamp("1995-01-01").value,
-                          pd.Timestamp("2005-12-31").value, size=N)
-    ),
-    "colonia_residencia": np.random.choice(colonias["colonia"], size=N),
-    "ingreso_familiar": np.random.choice([2000,5000,10000,15000],
-                                         size=N, p=[0.3,0.4,0.2,0.1]),
-    "personas_hogar": np.random.randint(2,7,size=N),
-    "horas_trabajo": np.random.choice([0,10,20,30,40],
-                                      size=N, p=[0.5,0.2,0.15,0.1,0.05]),
-    "traslado_min": np.random.choice([15,30,45,60,90],
-                                     size=N, p=[0.1,0.3,0.3,0.2,0.1]),
+    "fecha_nacimiento": [fake.date_of_birth(minimum_age=17, maximum_age=30) for _ in range(N)],
+    "colonia_residencia": np.random.choice(colonias["colonia_residencia"], size=N),
+    "alcaldia": np.random.choice(colonias["alcaldia"], size=N),
+    "ingreso_familiar": np.random.choice([3000,6000,9000,12000,15000], size=N),
+    "personas_hogar": np.random.randint(1,6, size=N),
+    "horas_trabajo": np.random.choice([0,10,20,30,40], size=N, p=[0.5,0.2,0.15,0.1,0.05]),
+    "traslado_min": np.random.choice([15,30,45,60,90], size=N, p=[0.1,0.3,0.3,0.2,0.1]),
     "dispositivo_propio": np.random.choice([0,1], size=N, p=[0.2,0.8]),
-    "internet_casa": np.random.choice([0,1], size=N, p=[0.15,0.85])
+    "internet_casa": np.random.choice([0,1], size=N, p=[0.1,0.9])
 })
+
 
 # --- Generate enrollments (inscripciones) ---
 rows = []
