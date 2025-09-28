@@ -173,7 +173,7 @@ ax.axis("off")
 plt.tight_layout()
 f6 = os.path.join(OUT_DIR,"figura6_alcaldias.png")
 plt.savefig(f6); plt.close()
-
+"""
 # ---- Build Executive Report DOCX (with embedded figures)
 doc = Document()
 doc.add_heading("URC – Informe Ejecutivo: Predicción del Abandono Escolar", 0)
@@ -239,7 +239,7 @@ doc.add_paragraph(
 
 docx_path = os.path.join(OUT_DIR, "URC_informe_ejecutivo.docx")
 doc.save(docx_path)
-"""
+
 print("\n✅ Done. Outputs in:", OUT_DIR)
 print(" -", os.path.basename(f1))
 print(" -", os.path.basename(f2))
