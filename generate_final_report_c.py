@@ -1,56 +1,84 @@
 # generate_final_report_c.py
 import sqlite3
 import pandas as pd
+import numpy as np
+import os
 import matplotlib.pyplot as plt
-import geopandas as gpd
-import matplotlib as mpl
+import matplotlib.patheffects as path_effects
+from statsmodels.discrete.discrete_model import Logit
+from statsmodels.tools import add_constant
+from sklearn.metrics import roc_curve, auc
 
 DB_PATH = "unrc.db"
-COLONIAS_FILE = "catlogo-de-colonias.json"
+OUT_DIR = "./out_pipeline"
+os.makedirs(OUT_DIR, exist_ok=True)
 
 # --- Load data ---
 conn = sqlite3.connect(DB_PATH)
 students = pd.read_sql("SELECT * FROM students_raw", conn)
-inscripciones = pd.read_sql("SELECT * FROM inscripciones", conn)
+panel = pd.read_sql("SELECT * FROM inscripciones", conn)
 conn.close()
 
-# Merge for analysis
-merged = inscripciones.merge(students, on="student_id", how="left")
+# Derive abandono again (last semester < 8 → dropout)
+panel = panel.sort_values(["student_id","semestre"])
+panel["abandono_flag"] = 0
+for sid, group in panel.groupby("student_id"):
+    max_sem = group["semestre"].max()
+    if max_sem < 8:
+        panel.loc[(panel["student_id"]==sid) & (panel["semestre"]==max_sem),"abandono_flag"] = 1
 
-# --- Summary statistics ---
-abandono_rate = merged["abandono"].mean()
-print(f"📊 Tasa global de abandono: {abandono_rate:.2%}")
+# --- Aggregate dropout rates ---
+agg_sem = panel.groupby("semestre")["abandono_flag"].mean().reset_index()
 
-# --- Choropleth map ---
-gdf = gpd.read_file(COLONIAS_FILE)
-gdf = gdf.rename(columns={"colonia": "colonia_residencia"})
+# --- Logistic regression ---
+merged = panel.merge(students[["student_id","horas_trabajo","traslado_min"]],
+                     on="student_id", how="left")
 
-dropout_map = merged.groupby("colonia_residencia")["abandono"].mean().reset_index()
-gdf = gdf.merge(dropout_map, on="colonia_residencia", how="left")
+predictors = ["promedio","asistencia_pct","horas_trabajo","traslado_min"]
+X = merged[predictors].copy()
+X = add_constant(X, has_constant="add")
+y = merged["abandono_flag"]
 
-fig, ax = plt.subplots(figsize=(12,12))
-gdf.plot(column="abandono", cmap="RdYlGn_r", legend=True,
-         legend_kwds={"label":"Tasa de abandono promedio"},
-         ax=ax, edgecolor="black", linewidth=0.2)
+logit = Logit(y, X).fit(disp=False)
 
-# Planteles demo coords
-planteles = pd.DataFrame({
-    "plantel":["Plantel Norte","Plantel Centro","Plantel Sur"],
-    "lon":[-99.15,-99.12,-99.18],
-    "lat":[19.5,19.4,19.3]
-})
-gdfp = gpd.GeoDataFrame(planteles,
-                        geometry=gpd.points_from_xy(planteles.lon, planteles.lat),
-                        crs="EPSG:4326")
+print("\n📊 Logistic regression summary:")
+print(logit.summary())
 
-gdfp.plot(ax=ax, color="blue", markersize=40)
+# --- Save coefficients ---
+coefs = pd.DataFrame({"var": X.columns, "coef": logit.params})
+coefs.to_csv(os.path.join(OUT_DIR, "logit_params.csv"), index=False)
 
-for _, row in gdfp.iterrows():
-    ax.text(row.geometry.x, row.geometry.y, row["plantel"],
-            fontsize=9, color="white", ha="center", va="center",
-            path_effects=[mpl.patheffects.withStroke(linewidth=2, foreground="black")])
+# --- Figures ---
+# 1. Dropout by semester
+plt.plot(agg_sem["semestre"], agg_sem["abandono_flag"], marker="o")
+plt.title("Tasa de abandono por semestre")
+plt.xlabel("Semestre")
+plt.ylabel("Proporción de abandono")
+plt.grid(True)
+plt.savefig(os.path.join(OUT_DIR, "figura1_abandono_por_semestre.png"))
+plt.close()
 
-ax.set_title("Tasa de abandono por colonia con planteles", fontsize=14)
-plt.savefig("out_pipeline/map_colonias.png", dpi=300)
+# 2. Logistic regression coefficients
+coefs_plot = coefs[coefs["var"]!="const"].sort_values("coef")
+plt.barh(coefs_plot["var"], coefs_plot["coef"], color="steelblue")
+plt.title("Coeficientes de la regresión logística")
+plt.xlabel("Efecto en log-odds de abandono")
+plt.tight_layout()
+plt.savefig(os.path.join(OUT_DIR, "figura2_coef_logistica.png"))
+plt.close()
 
-print("✅ Map saved to out_pipeline/map_colonias.png")
+# 3. ROC curve
+y_pred = logit.predict(X)
+fpr, tpr, _ = roc_curve(y, y_pred)
+roc_auc = auc(fpr, tpr)
+
+plt.plot(fpr, tpr, color="darkorange", lw=2, label=f"ROC curve (área = {roc_auc:.2f})")
+plt.plot([0,1],[0,1], color="navy", lw=2, linestyle="--")
+plt.xlabel("Tasa de falsos positivos")
+plt.ylabel("Tasa de verdaderos positivos")
+plt.title("Curva ROC del modelo logístico")
+plt.legend(loc="lower right")
+plt.savefig(os.path.join(OUT_DIR, "figura3_roc.png"))
+plt.close()
+
+print(f"\n✅ Analysis complete. Figures saved in {OUT_DIR}")
