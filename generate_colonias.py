@@ -23,7 +23,7 @@ COLONIAS_URL   = ("https://datos.cdmx.gob.mx/dataset/02c6ce99-dbd8-47d8-aee1-ae8
 # Download + load GeoJSON (always use GeoPandas)
 # -------------------------
 if not os.path.exists(COLONIAS_FILE):
-    print("⬇️ Downloading colonias GeoJSON…")
+    print("⬇️ Downloading {COLONIAS_FILE}")
     r = requests.get(COLONIAS_URL, timeout=90)
     r.raise_for_status()
     with open(COLONIAS_FILE, "wb") as f:
