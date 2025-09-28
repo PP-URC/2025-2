@@ -10,7 +10,7 @@ import json
 from shapely.geometry import shape
 
 DB_PATH = "unrc.db"
-COLONIAS_FILE = "catlogo-de-colonias (1).json"
+COLONIAS_FILE = "catlogo-de-colonias.json"
 
 # --- Robust load of colonias ---
 with open(COLONIAS_FILE, "r", encoding="utf-8") as f:
