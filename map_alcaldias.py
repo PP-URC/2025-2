@@ -8,10 +8,14 @@ import matplotlib.pyplot as plt
 import os
 import requests
 
+DB_PATH = "unrc.db"
+OUT_DIR = "./out_pipeline"
+os.makedirs(OUT_DIR, exist_ok=True)
+
+# --- Ensure GeoJSON is available ---
 BASE_DIR = os.path.dirname(__file__)
 GEOJSON_FILE = os.path.join(BASE_DIR, "limite-de-las-alcaldias.geojson")
 
-# Download if not present
 if not os.path.exists(GEOJSON_FILE):
     url = "https://datos.cdmx.gob.mx/dataset/bae265a8-d1f6-4614-b399-4184bc93e027/resource/deb5c583-84e2-4e07-a706-1b3a0dbc99b0/download/limite-de-las-alcaldas.json"
     print(f"⬇️ Downloading GeoJSON from {url} ...")
@@ -21,18 +25,13 @@ if not os.path.exists(GEOJSON_FILE):
         f.write(r.content)
     print(f"✅ Saved to {GEOJSON_FILE}")
 
-
-DB_PATH = "unrc.db"
-OUT_DIR = "./out_pipeline"
-os.makedirs(OUT_DIR, exist_ok=True)
-
 # --- Load DB ---
 conn = sqlite3.connect(DB_PATH)
 students = pd.read_sql("SELECT * FROM students_raw", conn)
 panel = pd.read_sql("SELECT * FROM inscripciones", conn)
 conn.close()
 
-# Derive abandono
+# Derive abandono: last semester < 8 → dropout
 panel = panel.sort_values(["student_id","semestre"])
 panel["abandono"] = 0
 for sid, group in panel.groupby("student_id"):
@@ -41,14 +40,16 @@ for sid, group in panel.groupby("student_id"):
         panel.loc[(panel["student_id"]==sid) & (panel["semestre"]==max_sem),"abandono"] = 1
 
 # Merge with alcaldía
-merged = panel.merge(students[["student_id","alcaldia_residencia"]], on="student_id", how="left")
+merged = panel.merge(students[["student_id","alcaldia_residencia"]],
+                     on="student_id", how="left")
 dropout_map = merged.groupby("alcaldia_residencia")["abandono"].mean().reset_index()
 
-# --- Load GeoJSON of CDMX alcaldías ---
-gdf = gpd.read_file("./limite-de-las-alcaldias.json")
+# --- Load GeoJSON ---
+gdf = gpd.read_file(GEOJSON_FILE)
 
-# Match on names
-gdf = gdf.merge(dropout_map, left_on="NOM_ALC", right_on="alcaldia_residencia", how="left")
+# Some GeoJSONs have alcaldía names under NOM_ALC, others NOM_MUN
+merge_key = "NOM_ALC" if "NOM_ALC" in gdf.columns else "NOM_MUN"
+gdf = gdf.merge(dropout_map, left_on=merge_key, right_on="alcaldia_residencia", how="left")
 
 # --- Plot choropleth ---
 fig, ax = plt.subplots(1, 1, figsize=(10,8))
