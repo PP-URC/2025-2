@@ -28,7 +28,7 @@ merged = panel.merge(
 
 # ---- Logistic model
 X = merged[["promedio","asistencia_pct","horas_trabajo","traslado_min"]].copy()
-X = sm.add_constant(X, hasconst="add")
+X = sm.add_constant(X)
 y = merged["abandono"].astype(int)
 
 logit = sm.Logit(y, X).fit(disp=False)
