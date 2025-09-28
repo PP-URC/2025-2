@@ -7,6 +7,20 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 import os
 
+BASE_DIR = os.path.dirname(__file__)
+GEOJSON_FILE = os.path.join(BASE_DIR, "limite-de-las-alcaldias.geojson")
+
+# Download if not present
+if not os.path.exists(GEOJSON_FILE):
+    url = "https://datos.cdmx.gob.mx/dataset/bae265a8-d1f6-4614-b399-4184bc93e027/resource/deb5c583-84e2-4e07-a706-1b3a0dbc99b0/download/limite-de-las-alcaldas.json"
+    print(f"⬇️ Downloading GeoJSON from {url} ...")
+    r = requests.get(url)
+    r.raise_for_status()
+    with open(GEOJSON_FILE, "wb") as f:
+        f.write(r.content)
+    print(f"✅ Saved to {GEOJSON_FILE}")
+
+
 DB_PATH = "unrc.db"
 OUT_DIR = "./out_pipeline"
 os.makedirs(OUT_DIR, exist_ok=True)
@@ -30,7 +44,7 @@ merged = panel.merge(students[["student_id","alcaldia_residencia"]], on="student
 dropout_map = merged.groupby("alcaldia_residencia")["abandono"].mean().reset_index()
 
 # --- Load GeoJSON of CDMX alcaldías ---
-gdf = gpd.read_file("limite-de-las-alcaldias.json")
+gdf = gpd.read_file("./limite-de-las-alcaldias.json")
 
 # Match on names
 gdf = gdf.merge(dropout_map, left_on="NOM_ALC", right_on="alcaldia_residencia", how="left")
