@@ -104,46 +104,57 @@ with open(os.path.join(OUT_DIR, "README.txt"), "w") as f:
 
 plt.figure()
 agg_sem.plot(x="semestre", y="abandono_sem", marker="o", legend=False)
-plt.title("Dropout rate per semester")
-plt.ylabel("Dropout rate")
-plt.xlabel("Semester")
+plt.title("Tasa de abandono por semestre")
+plt.ylabel("Proporción de abandono")
+plt.xlabel("Semestre")
 plt.grid(True)
-plt.savefig(os.path.join(OUT_DIR, "dropout_per_semester.png"))
+plt.savefig(os.path.join(OUT_DIR, "figura1_abandono_por_semestre.png"))
 plt.close()
 
+# --- Figura 2: Tasa de stop-out por semestre ---
 plt.figure()
 agg_sem.plot(x="semestre", y="stopout_sem", marker="o", color="orange", legend=False)
-plt.title("Stopout rate per semester")
-plt.ylabel("Stopout rate")
-plt.xlabel("Semester")
+plt.title("Tasa de reingreso temporal (stop-out) por semestre")
+plt.ylabel("Proporción de stop-out")
+plt.xlabel("Semestre")
 plt.grid(True)
-plt.savefig(os.path.join(OUT_DIR, "stopout_per_semester.png"))
+plt.savefig(os.path.join(OUT_DIR, "figura2_stopout_por_semestre.png"))
 plt.close()
 
+# --- Figura 3: Coeficientes de la regresión logística ---
 coefs = pd.DataFrame({
     "var": X.columns,
     "coef": logit.params,
     "pval": logit.pvalues
-}).sort_values("coef")
-
-plt.figure(figsize=(6,4))
-plt.barh(coefs["var"], coefs["coef"], color="steelblue")
-plt.title("Logistic regression coefficients")
-plt.xlabel("Effect on dropout log-odds")
-plt.tight_layout()
-plt.savefig(os.path.join(OUT_DIR, "logit_coefficients.png"))
-plt.close()
-
-
-
+})
 coefs = coefs[coefs["var"] != "const"].sort_values("coef")
 
 plt.figure(figsize=(6,4))
 plt.barh(coefs["var"], coefs["coef"], color="steelblue")
-plt.title("Logistic regression coefficients (no const)")
-plt.xlabel("Effect on dropout log-odds")
+plt.title("Coeficientes de la regresión logística para abandono")
+plt.xlabel("Efecto en log-odds de abandono")
 plt.tight_layout()
-plt.savefig(os.path.join(OUT_DIR, "logit_coefficients.png"))
+plt.savefig(os.path.join(OUT_DIR, "figura3_coef_logistica.png"))
+plt.close()
+
+# --- Figura 4: Diagrama de la regla t+1 ---
+import matplotlib.patches as mpatches
+
+fig, ax = plt.subplots(figsize=(8,2))
+semestres = ["Sem 1", "Sem 2", "Sem 3", "Sem 4"]
+for i, sem in enumerate(semestres):
+    ax.text(i*2, 0, sem, ha="center", va="center", fontsize=12, bbox=dict(boxstyle="round", facecolor="lightblue"))
+    if i < len(semestres)-1:
+        ax.annotate("", xy=(i*2+1.2, 0), xytext=(i*2+0.8, 0),
+                    arrowprops=dict(arrowstyle="->", lw=1.5))
+
+ax.text(8, 0.3, "Si no reaparece = Abandono", fontsize=10, color="red")
+ax.text(8, -0.1, "Si reaparece más tarde = Stop-out", fontsize=10, color="orange")
+ax.text(8, -0.5, "Si llega a Sem 8 = Graduación", fontsize=10, color="green")
+
+ax.axis("off")
+plt.title("Ejemplo de la regla t+1 para identificar abandono y stop-out", fontsize=12)
+plt.savefig(os.path.join(OUT_DIR, "figura4_regla_tmas1.png"), bbox_inches="tight")
 plt.close()
 
 print("Pipeline finished. Outputs in", OUT_DIR)
