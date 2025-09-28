@@ -8,7 +8,7 @@ import statsmodels.api as sm
 from sklearn.metrics import roc_curve, auc
 from docx import Document
 from docx.shared import Inches
-
+from genreate_colonias import COLONIAS_FILE, COLONIAS_URL
 OUT_DIR = "out_pipeline"
 os.makedirs(OUT_DIR, exist_ok=True)
 
@@ -106,9 +106,7 @@ f4 = os.path.join(OUT_DIR,"figura4_top10_risk.png")
 plt.savefig(f4); plt.close()
 
 # ---- Figure 5: Colonias risk map
-COLONIAS_FILE  = "coloniascdmx.geojson"
-COLONIAS_URL   = ("https://datos.cdmx.gob.mx/dataset/04a1900a-0c2f-41ed-94dc-3d2d5bad4065/"
-                  "resource/f1408eeb-4e97-4548-bc69-61ff83838b1d/download/coloniascdmx.geojson")
+
 if not os.path.exists(COLONIAS_FILE):
     r = requests.get(COLONIAS_URL, timeout=90)
     r.raise_for_status()
