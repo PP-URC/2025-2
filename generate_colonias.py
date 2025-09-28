@@ -66,10 +66,10 @@ for sid, row in students.iterrows():
       + 0.02*(row["traslado_min"] - 45) # 15..90 -> ~(-0.6..+0.9)
             )
 
-          p_dropout = 1.0/(1.0 + np.exp(-z))
+        p_dropout = 1.0/(1.0 + np.exp(-z))
 
-          # Only the last observed semester can realize dropout
-          abandono = np.random.binomial(1, p_dropout) if sem == n_sem else 0
+        # Only the last observed semester can realize dropout
+        abandono = np.random.binomial(1, p_dropout) if sem == n_sem else 0
 
        
 
