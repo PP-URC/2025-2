@@ -30,7 +30,7 @@ merged = panel.merge(students[["student_id","alcaldia_residencia"]], on="student
 dropout_map = merged.groupby("alcaldia_residencia")["abandono"].mean().reset_index()
 
 # --- Load GeoJSON of CDMX alcaldías ---
-gdf = gpd.read_file("cdmx_alcaldias.geojson")
+gdf = gpd.read_file("limite-de-las-alcaldias.geojson")
 
 # Match on names
 gdf = gdf.merge(dropout_map, left_on="NOM_ALC", right_on="alcaldia_residencia", how="left")
