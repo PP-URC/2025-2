@@ -6,6 +6,7 @@ import json
 from faker import Faker
 import random
 import os
+import requests
 
 DB_PATH = "unrc.db"
 COLONIAS_FILE = "catlogo-de-colonias.json"
@@ -13,6 +14,17 @@ N_STUDENTS = 1000
 SEMESTRES_MAX = 8
 
 fake = Faker("es_MX")
+
+url = "https://datos.cdmx.gob.mx/dataset/02c6ce99-dbd8-47d8-aee1-ae885a12bb2f/resource/265d519b-8949-46c0-8caa-5eaca7e690ec/download/catlogo-de-colonias.json"
+if not os.path.exists(COLONIAS_FILE):
+    print("⬇️ Downloading colonias GeoJSON...")
+    r = requests.get(url)
+    r.raise_for_status()
+    with open(COLONIAS_FILE, "wb") as f:
+        f.write(r.content)
+    print(f"✅ Saved {COLONIAS_FILE}")
+else:
+    print(f"Already have {COLONIAS_FILE}")
 
 # --- Load colonias catalog as plain JSON ---
 print("📥 Loading colonias catalog...")
