@@ -11,9 +11,26 @@ DB_PATH = "unrc.db"
 OUT_DIR = "./out_pipeline"
 os.makedirs(OUT_DIR, exist_ok=True)
 
-# --- Use uploaded file ---
+import requests
+
+# File paths
 BASE_DIR = os.path.dirname(__file__)
 GEOJSON_FILE = os.path.join(BASE_DIR, "limite-de-las-alcaldas.json")
+
+# Download if not present
+if not os.path.exists(GEOJSON_FILE):
+    url = "https://datos.cdmx.gob.mx/dataset/bae265a8-d1f6-4614-b399-4184bc93e027/resource/deb5c583-84e2-4e07-a706-1b3a0dbc99b0/download/limite-de-las-alcaldas.json"
+    print(f"⬇️ Downloading GeoJSON from {url} ...")
+    r = requests.get(url)
+    r.raise_for_status()
+    with open(GEOJSON_FILE, "wb") as f:
+        f.write(r.content)
+    print(f"✅ Saved to {GEOJSON_FILE}")
+
+
+# --- Use uploaded file ---
+
+
 
 # --- Load DB ---
 conn = sqlite3.connect(DB_PATH)
