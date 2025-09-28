@@ -83,6 +83,7 @@ rows = []
 for sid, row in students.iterrows():
     n_sem = np.random.randint(1, SEMESTRES_MAX+1)
     for sem in range(1, n_sem+1):
+        
         promedio   = np.clip(np.random.normal(8, 1), 5, 10)
         asistencia = np.clip(np.random.normal(85, 10), 40, 100)
         materias   = np.random.randint(4,7)
@@ -91,18 +92,27 @@ for sid, row in students.iterrows():
         beca       = np.random.choice([0,1], p=[0.7,0.3])
         tutoria    = np.random.choice([0,1], p=[0.8,0.2])
 
-        sem_effect = {1: 0.8, 2: 0.6, 3: 0.3, 4: 0.1,
-                      5: -0.1, 6: -0.3, 7: -0.5, 8: -0.7}.get(sem, -0.5)
+        sem_effect = {
+        1: 1.2,  # very high dropout risk first semester
+        2: 0.8,
+        3: 0.4,
+        4: 0.0,
+        5: -0.4,
+        6: -0.8,
+        7: -1.2,
+        8: -1.6
+        }.get(sem, -0.5)
 
         z = (
-            -1.1
-            + sem_effect
-            - 0.9*(promedio - 8)
-            - 0.03*(asistencia - 85)
-            + 0.04*(row["horas_trabajo"])
-            + 0.02*(row["traslado_min"] - 45)
-            + 0.5 * row["marginacion_index"]
-        )
+        -1.3  # intercept: pushes base risk higher
+        + sem_effect
+        - 1.0*(promedio - 8)         # stronger grade effect
+        - 0.05*(asistencia - 85)     # stronger attendance penalty
+        + 0.05*(row["horas_trabajo"])    # work hours weigh more
+        + 0.03*(row["traslado_min"] - 45)
+        + 0.7 * row["marginacion_index"] # marginación has larger impact
+)
+
 
         p_dropout = 1.0/(1.0 + np.exp(-z))
         abandono = np.random.binomial(1, p_dropout) if sem == n_sem else 0
