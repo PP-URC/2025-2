@@ -33,7 +33,13 @@ if not os.path.exists(COLONIAS_FILE):
 else:
     print(f"Already have {COLONIAS_FILE}")
 
-# Always read with GeoPandas (NOT json.load, NOT pd.read_json)
+# Always rea
+
+with open("coloniascdmx.geojson","rb") as f:
+    print(f.read(200))
+
+
+d with GeoPandas (NOT json.load, NOT pd.read_json)
 gdf_colonias = gpd.read_file(COLONIAS_FILE)
 # Expected columns typically include: ['cve_ent','entidad','cve_alc','alc','cve_col','colonia','clasif','geometry']
 cols = gdf_colonias.columns.str.lower().tolist()
