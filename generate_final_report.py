@@ -105,13 +105,25 @@ plt.savefig(os.path.join(OUT_DIR, "figura3_roc.png"))
 plt.close()
 
 # --- Figure 4: Top 10 students at risk ---
-top10 = student_risk.head(10)
-plt.barh(top10["student_id"].astype(str), top10["abandono_prob"], color="firebrick")
-plt.gca().invert_yaxis()  # highest risk at top
-plt.title("Top 10 estudiantes con mayor probabilidad de abandono")
-plt.xlabel("Probabilidad de abandono")
-plt.tight_layout()
-plt.savefig(os.path.join(OUT_DIR, "figura4_top10.png"))
+top10_details = top10.merge(students, on="student_id", how="left")
+top10_details = top10_details.merge(
+    panel.groupby("student_id")[["promedio","asistencia_pct"]].mean().reset_index(),
+    on="student_id", how="left"
+)
+top10_details.to_csv(os.path.join(OUT_DIR,"top10_details.csv"), index=False)
+
+# Render as image
+fig, ax = plt.subplots(figsize=(10,3))
+ax.axis("off")
+tbl = ax.table(
+    cellText=top10_details[["student_id","abandono_prob","promedio","asistencia_pct","horas_trabajo","traslado_min"]].round(2).values,
+    colLabels=["ID","Prob.","Prom.","Asist.","Horas trabajo","Traslado min"],
+    loc="center"
+)
+tbl.auto_set_font_size(False)
+tbl.set_fontsize(8)
+tbl.scale(1.2,1.2)
+plt.savefig(os.path.join(OUT_DIR,"figura5_top10_table.png"), dpi=200)
 plt.close()
 
 # Save sample tables
