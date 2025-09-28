@@ -5,7 +5,7 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 
 DB_PATH = "unrc.db"
-COLONIAS_FILE = "catlogo-de-colonias (1).json"
+COLONIAS_FILE = "catlogo-de-colonias.json"
 OUT_DIR = "./out_pipeline"
 os.makedirs(OUT_DIR, exist_ok=True)
 
