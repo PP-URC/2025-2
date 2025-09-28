@@ -7,7 +7,7 @@ import random
 import os
 
 DB_PATH = "unrc.db"
-COLONIAS_FILE = "coloniascdmx.geojson"
+COLONIAS_FILE = "catlogo-de-colonias.json"
 N_STUDENTS = 1000
 SEMESTRES_MAX = 8
 
