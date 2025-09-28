@@ -8,6 +8,7 @@ import numpy as np
 import geopandas as gpd
 import json
 from shapely.geometry import shape
+from Faker import fake
 
 DB_PATH = "unrc.db"
 COLONIAS_FILE = "catlogo-de-colonias.json"
