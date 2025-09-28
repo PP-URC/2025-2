@@ -1,29 +1,19 @@
 # map_alcaldias.py
-# Generate choropleth map of dropout by alcaldía + URC campuses
+# Choropleth of dropout by alcaldía + URC campuses
 
 import sqlite3
 import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import os
-import requests
 
 DB_PATH = "unrc.db"
 OUT_DIR = "./out_pipeline"
 os.makedirs(OUT_DIR, exist_ok=True)
 
-# --- Ensure GeoJSON is available ---
+# --- Use uploaded file ---
 BASE_DIR = os.path.dirname(__file__)
-GEOJSON_FILE = os.path.join(BASE_DIR, "limite-de-las-alcaldias.geojson")
-
-if not os.path.exists(GEOJSON_FILE):
-    url = "https://datos.cdmx.gob.mx/dataset/bae265a8-d1f6-4614-b399-4184bc93e027/resource/deb5c583-84e2-4e07-a706-1b3a0dbc99b0/download/limite-de-las-alcaldas.json"
-    print(f"⬇️ Downloading GeoJSON from {url} ...")
-    r = requests.get(url)
-    r.raise_for_status()
-    with open(GEOJSON_FILE, "wb") as f:
-        f.write(r.content)
-    print(f"✅ Saved to {GEOJSON_FILE}")
+GEOJSON_FILE = os.path.join(BASE_DIR, "limite-de-las-alcaldas.json")
 
 # --- Load DB ---
 conn = sqlite3.connect(DB_PATH)
@@ -32,27 +22,29 @@ panel = pd.read_sql("SELECT * FROM inscripciones", conn)
 conn.close()
 
 # Derive abandono: last semester < 8 → dropout
-panel = panel.sort_values(["student_id","semestre"])
+panel = panel.sort_values(["student_id", "semestre"])
 panel["abandono"] = 0
 for sid, group in panel.groupby("student_id"):
     max_sem = group["semestre"].max()
     if max_sem < 8:
-        panel.loc[(panel["student_id"]==sid) & (panel["semestre"]==max_sem),"abandono"] = 1
+        panel.loc[(panel["student_id"] == sid) &
+                  (panel["semestre"] == max_sem), "abandono"] = 1
 
 # Merge with alcaldía
-merged = panel.merge(students[["student_id","alcaldia_residencia"]],
+merged = panel.merge(students[["student_id", "alcaldia_residencia"]],
                      on="student_id", how="left")
 dropout_map = merged.groupby("alcaldia_residencia")["abandono"].mean().reset_index()
 
 # --- Load GeoJSON ---
 gdf = gpd.read_file(GEOJSON_FILE)
 
-# Some GeoJSONs have alcaldía names under NOM_ALC, others NOM_MUN
-merge_key = "NOM_ALC" if "NOM_ALC" in gdf.columns else "NOM_MUN"
-gdf = gdf.merge(dropout_map, left_on=merge_key, right_on="alcaldia_residencia", how="left")
+# CDMX official file: alcaldía names under 'nomgeo'
+merge_key = "nomgeo"
+gdf = gdf.merge(dropout_map, left_on=merge_key,
+                right_on="alcaldia_residencia", how="left")
 
 # --- Plot choropleth ---
-fig, ax = plt.subplots(1, 1, figsize=(10,8))
+fig, ax = plt.subplots(1, 1, figsize=(10, 8))
 gdf.plot(column="abandono", cmap="Reds", legend=True,
          edgecolor="black", ax=ax, linewidth=0.5)
 ax.set_title("Tasa de abandono por alcaldía (URC - datos sintéticos)", fontsize=14)
@@ -71,10 +63,11 @@ campuses.plot(kind="scatter", x="lon", y="lat",
               marker="*", color="blue", s=120, ax=ax, label="Planteles URC")
 
 for _, row in campuses.iterrows():
-    ax.text(row["lon"], row["lat"], row["plantel"], fontsize=8, ha="left", va="bottom")
+    ax.text(row["lon"], row["lat"], row["plantel"],
+            fontsize=8, ha="left", va="bottom")
 
 plt.legend()
-plt.savefig(os.path.join(OUT_DIR,"figura6_alcaldias.png"), dpi=200)
+plt.savefig(os.path.join(OUT_DIR, "figura6_alcaldias.png"), dpi=200)
 plt.close()
 
 print("✅ Saved map with URC campuses at out_pipeline/figura6_alcaldias.png")
