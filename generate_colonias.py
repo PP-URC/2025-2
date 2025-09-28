@@ -26,8 +26,9 @@ for ft in features:
 gdf_colonias = gpd.GeoDataFrame(rows, geometry="geometry", crs="EPSG:4326")
 
 # Your file has "nomgeo" as colonia name
-colonias = gdf_colonias[["nomgeo"]].drop_duplicates()
-colonias = colonias.rename(columns={"nomgeo": "colonia"})
+colonias = gdf_colonias[["colonia", "alc"]].drop_duplicates()
+colonias = colonias.rename(columns={"colonia": "colonia_residencia", "alc": "alcaldia"})
+
 
 # --- Generate students ---
 np.random.seed(42)
