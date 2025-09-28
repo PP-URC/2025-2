@@ -1,5 +1,6 @@
 # generator_sqlite_unrc_colonias.py
 # Generate synthetic UNRC student + enrollment data with colonias of CDMX
+# Identical to alcaldia version, except using "colonia_residencia"
 
 import sqlite3
 import pandas as pd
@@ -9,9 +10,9 @@ import json
 from shapely.geometry import shape
 
 DB_PATH = "unrc.db"
-COLONIAS_FILE = "catlogo-de-colonias.json"
+COLONIAS_FILE = "catlogo-de-colonias (1).json"
 
-# --- Load colonias robustly ---
+# --- Robust load of colonias ---
 with open(COLONIAS_FILE, "r", encoding="utf-8") as f:
     raw = json.load(f)
 
@@ -24,9 +25,9 @@ for ft in features:
 
 gdf_colonias = gpd.GeoDataFrame(rows, geometry="geometry", crs="EPSG:4326")
 
-# Keep only colonia + alcaldía names
-colonias = gdf_colonias[["nom_col", "nom_alc"]].drop_duplicates()
-colonias = colonias.rename(columns={"nom_col":"colonia", "nom_alc":"alcaldia"})
+# Your file has "nomgeo" as colonia name
+colonias = gdf_colonias[["nomgeo"]].drop_duplicates()
+colonias = colonias.rename(columns={"nomgeo": "colonia"})
 
 # --- Generate students ---
 np.random.seed(42)
