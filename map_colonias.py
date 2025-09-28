@@ -3,8 +3,9 @@ import os, sqlite3, requests, unicodedata
 import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
-from generate_colonias import COLONIAS_FILE, COLONIAS_URL
-OUT_DIR = "out_pipeline"
+from generate_colonias import COLONIAS_FILE, COLONIAS_URL, OUT_DIR
+
+
 os.makedirs(OUT_DIR, exist_ok=True)
 
 DB_PATH = "unrc.db"
