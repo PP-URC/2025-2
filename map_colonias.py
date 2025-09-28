@@ -5,7 +5,7 @@ import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
 from generate_colonias import COLONIAS_FILE, COLONIAS_URL, DB_PATH 
-from generate_final_report import OUT_DIR
+from generate_final_report_c import OUT_DIR
 
 os.makedirs(OUT_DIR, exist_ok=True)
 
