@@ -66,7 +66,7 @@ agg_sem = panel.groupby("semestre").agg(
 ).reset_index()
 
 # --- 3. Logistic regression ---
-X = panel[["promedio_semestre","asistencia_pct","horas_trabajo","traslado_min"]].copy()
+X = panel[["promedio","asistencia_pct","horas_trabajo","traslado_min"]].copy()
 X = add_constant(X, has_constant="add")
 y = panel["abandono"]
 logit = Logit(y, X).fit(disp=False)
