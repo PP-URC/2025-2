@@ -8,6 +8,10 @@ import matplotlib.pyplot as plt
 import os
 import requests
 
+
+
+
+
 DB_PATH = "unrc.db"
 OUT_DIR = "./out_pipeline"
 os.makedirs(OUT_DIR, exist_ok=True)
@@ -46,7 +50,8 @@ merged = panel.merge(students[["student_id", "colonia_residencia"]],
 dropout_map = merged.groupby("colonia_residencia")["abandono"].mean().reset_index()
 
 # --- Load GeoJSON ---
-gdf = gpd.read_file(GEOJSON_FILE)
+
+gdf = gpd.read_file(GEOJSON_FILE, engine="pyogrio")
 
 # Detect name column
 possible_keys = ["nom_col", "NOM_COL", "colonia", "NOMBRE"]
