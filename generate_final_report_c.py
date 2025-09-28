@@ -142,7 +142,7 @@ ax.axis("off")
 plt.tight_layout()
 f5 = os.path.join(OUT_DIR,"figura5_colonias_riesgo.png")
 plt.savefig(f5); plt.close()
-
+"""
 # ---- Figure 6: Alcaldías + planteles
 ALC_FILE = "limite-de-las-alcaldias.json"
 ALC_URL  = ("https://datos.cdmx.gob.mx/dataset/bae265a8-d1f6-4614-b399-4184bc93e027/"
@@ -239,7 +239,7 @@ doc.add_paragraph(
 
 docx_path = os.path.join(OUT_DIR, "URC_informe_ejecutivo.docx")
 doc.save(docx_path)
-
+"""
 print("\n✅ Done. Outputs in:", OUT_DIR)
 print(" -", os.path.basename(f1))
 print(" -", os.path.basename(f2))
@@ -247,5 +247,5 @@ print(" -", os.path.basename(f3))
 print(" -", os.path.basename(f4))
 print(" -", os.path.basename(f5))
 print(" -", os.path.basename(f6))
-print(" - URC_informe_ejecutivo.docx")
+#print(" - URC_informe_ejecutivo.docx")
 print(" - top10_risk_students.csv")
