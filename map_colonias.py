@@ -14,7 +14,7 @@ OUT_DIR = "./out_pipeline"
 os.makedirs(OUT_DIR, exist_ok=True)
 
 # --- Load colonias ---
-with open(COLONIAS_FILE, "r", encoding="utf-8") as f:
+with open(COLONIAS_FILE, "r", encoding="latin1") as f:
     raw = json.load(f)
 
 features = raw["features"]
