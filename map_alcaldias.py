@@ -6,6 +6,7 @@ import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import os
+import requests
 
 BASE_DIR = os.path.dirname(__file__)
 GEOJSON_FILE = os.path.join(BASE_DIR, "limite-de-las-alcaldias.geojson")
