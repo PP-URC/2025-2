@@ -1,10 +1,14 @@
 """
-pipeline_analyze.py
--------------------
+generate_final_report.py
+------------------------
 1. Load DB (unrc.db)
 2. Aggregate dropout rates
 3. Logistic regression
 4. Save figures (PNG) into ./out_pipeline
+5. Save regression coefficients
+6. Calculate dropout probabilities
+7. Save student risk CSV ordered by probability
+8. Plot Top 10 students at risk
 """
 
 import sqlite3
@@ -24,13 +28,13 @@ os.makedirs(OUT_DIR, exist_ok=True)
 conn = sqlite3.connect(DB_PATH)
 students = pd.read_sql("SELECT * FROM students_raw", conn)
 panel = pd.read_sql("SELECT * FROM inscripciones", conn)
+conn.close()
 
 # Derive abandono: dropout if student doesn't appear in next semester
 panel = panel.sort_values(["student_id","semestre"])
 panel["abandono"] = 0
 for sid, group in panel.groupby("student_id"):
     max_sem = group["semestre"].max()
-    # mark dropout at last observed semester if <8
     if max_sem < 8:
         panel.loc[(panel["student_id"]==sid) & (panel["semestre"]==max_sem),"abandono"] = 1
 
@@ -39,7 +43,8 @@ agg_sem = panel.groupby("semestre")["abandono"].mean().reset_index()
 agg_sem.rename(columns={"abandono":"abandono_rate"}, inplace=True)
 
 # --- Logistic regression ---
-merged = panel.merge(students[["student_id","horas_trabajo","traslado_min"]], on="student_id", how="left")
+merged = panel.merge(students[["student_id","horas_trabajo","traslado_min"]],
+                     on="student_id", how="left")
 
 predictors = ["promedio","asistencia_pct","horas_trabajo","traslado_min"]
 X = merged[predictors].copy()
@@ -47,13 +52,22 @@ X = add_constant(X, has_constant="add")
 y = merged["abandono"]
 
 logit = Logit(y, X).fit(disp=False)
-
 print("\n📊 Logistic regression summary:")
 print(logit.summary())
 
-# --- Save figures ---
+# --- Save coefficients ---
+logit.params.to_csv(os.path.join(OUT_DIR,"logit_params.csv"))
+print("✅ Saved regression coefficients at out_pipeline/logit_params.csv")
 
-# Figure 1: Dropout by semester
+# --- Predict dropout probabilities ---
+log_odds = X @ logit.params
+merged["abandono_prob"] = 1 / (1 + np.exp(-log_odds))
+
+student_risk = merged.groupby("student_id")["abandono_prob"].max().reset_index()
+student_risk = student_risk.sort_values("abandono_prob", ascending=False)
+student_risk.to_csv(os.path.join(OUT_DIR,"student_dropout_risk.csv"), index=False)
+
+# --- Figure 1: Dropout by semester ---
 plt.plot(agg_sem["semestre"], agg_sem["abandono_rate"], marker="o")
 plt.title("Tasa de abandono por semestre")
 plt.xlabel("Semestre")
@@ -62,7 +76,7 @@ plt.grid(True)
 plt.savefig(os.path.join(OUT_DIR, "figura1_abandono_por_semestre.png"))
 plt.close()
 
-# Figure 2: Logistic regression coefficients
+# --- Figure 2: Logistic regression coefficients ---
 coefs = pd.DataFrame({
     "var": X.columns,
     "coef": logit.params
@@ -76,7 +90,7 @@ plt.tight_layout()
 plt.savefig(os.path.join(OUT_DIR, "figura2_coef_logistica.png"))
 plt.close()
 
-# Figure 3: ROC curve
+# --- Figure 3: ROC curve ---
 y_pred = logit.predict(X)
 fpr, tpr, _ = roc_curve(y, y_pred)
 roc_auc = auc(fpr, tpr)
@@ -90,8 +104,18 @@ plt.legend(loc="lower right")
 plt.savefig(os.path.join(OUT_DIR, "figura3_roc.png"))
 plt.close()
 
-# Save sample tables
-students.head(10).to_csv(os.path.join(OUT_DIR, "sample_students.csv"), index=False)
-agg_sem.head(10).to_csv(os.path.join(OUT_DIR, "sample_agg_sem.csv"), index=False)
+# --- Figure 4: Top 10 students at risk ---
+top10 = student_risk.head(10)
+plt.barh(top10["student_id"].astype(str), top10["abandono_prob"], color="firebrick")
+plt.gca().invert_yaxis()  # highest risk at top
+plt.title("Top 10 estudiantes con mayor probabilidad de abandono")
+plt.xlabel("Probabilidad de abandono")
+plt.tight_layout()
+plt.savefig(os.path.join(OUT_DIR, "figura4_top10.png"))
+plt.close()
 
-print(f"\n✅ Analysis complete. Figures saved in {OUT_DIR}")
+# Save sample tables
+students.head(10).to_csv(os.path.join(OUT_DIR,"sample_students.csv"), index=False)
+agg_sem.head(10).to_csv(os.path.join(OUT_DIR,"sample_agg_sem.csv"), index=False)
+
+print(f"\n✅ Analysis complete. Figures + risk CSV saved in {OUT_DIR}")
