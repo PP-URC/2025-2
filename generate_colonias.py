@@ -17,7 +17,7 @@ SEMESTRES_MAX  = 8
 DB_PATH        = "unrc.db"
 
 COLONIAS_FILE  = "catlogo-de-colonias.json"
-COLONIAS_URL   = ("https://datos.cdmx.gob.mx/dataset/02c6ce99-dbd8-47d8-aee1-ae885a12bb2f/resource/026b42d3-a609-44c7-a83d-22b2150caffc/download/catlogo-de-colonias.json")
+COLONIAS_URL   = "https://datos.cdmx.gob.mx/dataset/02c6ce99-dbd8-47d8-aee1-ae885a12bb2f/resource/026b42d3-a609-44c7-a83d-22b2150caffc/download/catlogo-de-colonias.json"
 
 # -------------------------
 # Download + load GeoJSON (always use GeoPandas)
