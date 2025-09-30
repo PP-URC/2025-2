@@ -164,7 +164,7 @@ for table_ in tables:
     columns = [description[0] for description in cur.description]
     print(columns)
     for row in cur.fetchall():
-        print("| " + " | ".join(row) + " |")
+        print("| " + " | ".join(map(str, row)) + " |")
     
     
 conn.close()
