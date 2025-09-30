@@ -156,6 +156,9 @@ if os.path.exists(DB_PATH):
 conn = sqlite3.connect(DB_PATH)
 students.to_sql("students_raw", conn, index=False)
 inscripciones.to_sql("inscripciones", conn, index=False)
+cur = conn.cursor()
+cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
+print(cur.fetchall())
 conn.close()
 
 print(f"✅ Created {DB_PATH} with {len(students)} students and {len(inscripciones)} inscripciones")
