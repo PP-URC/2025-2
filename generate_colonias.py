@@ -158,7 +158,15 @@ students.to_sql("students_raw", conn, index=False)
 inscripciones.to_sql("inscripciones", conn, index=False)
 cur = conn.cursor()
 cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
-print(cur.fetchall())
+tables = cur.fetchall()
+for table_ in tables:
+    cur.execute(f"SELECT * FROM {table_[0]} LIMIT 20")
+    columns = [description[0] for description in cur.description]
+    print(columns)
+    for row in cur.fetchall():
+        print("| " + " | ".join(row) + " |")
+    
+    
 conn.close()
 
 print(f"✅ Created {DB_PATH} with {len(students)} students and {len(inscripciones)} inscripciones")
