@@ -1,10 +1,22 @@
 
 
 from faker import Faker
+import subprocess
+
+
+subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+
+install_package('faker')
+install_package('openpyxl')
+install_package('pandas')
+install_package('numpy')
+
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import os
+import sys
+
 
 
 fake = Faker('es_MX')
