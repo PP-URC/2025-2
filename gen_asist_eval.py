@@ -1,12 +1,3 @@
-import subprocess
-
-subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-
-install_package('faker')
-install_package('openpyxl')
-install_package('pandas')
-install_package('numpy')
-
 from faker import Faker
 import pandas as pd
 import numpy as np
