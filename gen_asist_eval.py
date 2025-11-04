@@ -11,7 +11,7 @@ fake = Faker('es_MX')
 np.random.seed(42)
 fake.seed_instance(42)
 
-def generate_attendance(n_students, n_sessions, base_attendance=0.75, variability=0.15):
+def generate_attendance(n_students, n_sessions, base_attendance=0.8, variability=0.15):
 
     # Individual attendance rates centered around base_attendance
     student_rates = np.random.normal(base_attendance, variability, n_students)
