@@ -37,7 +37,7 @@ def generate_evals(n_students, n_assignments, min_score=5, max_score=10):
     return scores
 
 
-print("*" * 200)
+
 
 def data_to_excel_pd(directory, group, names, evaluation_data, attendance_data):
 
@@ -77,7 +77,6 @@ def create_groups(n_groups, n_lessons=17, n_evals=10, min_students=10, max_stude
     os.makedirs(directory_name, exist_ok=True)
 
     print("🎓 GENERANDO DATOS DE ESTUDIANTES POR GRUPO")
-    print("=" * 60)
 
     for group in groups:
 
