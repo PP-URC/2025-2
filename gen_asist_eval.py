@@ -1,4 +1,4 @@
-!pip install faker pandas openpyxl numpy
+
 
 from faker import Faker
 import pandas as pd
