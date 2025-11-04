@@ -23,17 +23,49 @@ def generate_attendance(n_students, n_sessions, base_attendance=0.8, variability
 
     return attendance.astype(int)
 
-
 def generate_evals(n_students, n_assignments, min_score=5, max_score=10):
-
-
+    """
+    Generar evaluaciones con diferencias realistas entre estudiantes
+    """
     scores_range = list(range(min_score, max_score + 1))
-    probabilities = [0.1, 0.1, 0.15, 0.12, 0.3, 0.15]
-
-    scores = np.random.choice(scores_range,
-                             size=(n_students, n_assignments),
-                             p=probabilities)
-
+    
+    # Crear diferentes perfiles de estudiantes
+    scores = np.zeros((n_students, n_assignments))
+    
+    for i in range(n_students):
+        # Asignar perfil de rendimiento basado en posición
+        if i % 5 == 0:  # 20% - Rendimiento crítico
+            base_prob = [0.3, 0.25, 0.2, 0.15, 0.08, 0.02]  # Sesgado hacia 5-7
+            variability = 1.5  # Alta variabilidad
+        elif i % 5 == 1:  # 20% - Rendimiento bajo
+            base_prob = [0.15, 0.2, 0.25, 0.2, 0.15, 0.05]  # Sesgado hacia 6-8
+            variability = 1.2
+        elif i % 5 == 2:  # 20% - Rendimiento inconsistente
+            base_prob = [0.1, 0.15, 0.2, 0.2, 0.2, 0.15]  # Distribución plana
+            variability = 2.0  # Muy alta variabilidad
+        elif i % 5 == 3:  # 20% - Rendimiento promedio
+            base_prob = [0.05, 0.1, 0.15, 0.25, 0.3, 0.15]  # Sesgado hacia 8-9
+            variability = 0.8
+        else:  # 20% - Rendimiento excelente
+            base_prob = [0.02, 0.03, 0.05, 0.1, 0.3, 0.5]  # Sesgado hacia 9-10
+            variability = 0.5  # Baja variabilidad
+        
+        # Aplicar variabilidad a las probabilidades
+        varied_probs = np.array(base_prob) + np.random.normal(0, 0.05, 6)
+        varied_probs = np.clip(varied_probs, 0.01, 0.99)
+        varied_probs = varied_probs / varied_probs.sum()  # Normalizar
+        
+        # Generar scores para este estudiante
+        student_scores = np.random.choice(scores_range, 
+                                        size=n_assignments, 
+                                        p=varied_probs)
+        
+        # Agregar variabilidad adicional
+        noise = np.random.normal(0, variability, n_assignments)
+        student_scores = np.clip(student_scores + noise, min_score, max_score).astype(int)
+        
+        scores[i] = student_scores
+    
     return scores
 
 
