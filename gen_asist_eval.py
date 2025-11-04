@@ -28,7 +28,7 @@ def generate_evals(n_students, n_assignments, min_score=5, max_score=10):
 
 
     scores_range = list(range(min_score, max_score + 1))
-    probabilities = [0.02, 0.05, 0.08, 0.15, 0.30, 0.40]
+    probabilities = [0.1, 0.1, 0.15, 0.12, 0.3, 0.15]
 
     scores = np.random.choice(scores_range,
                              size=(n_students, n_assignments),
