@@ -88,8 +88,3 @@ def create_groups(n_groups, n_lessons=17, n_evals=10, min_students=10, max_stude
         evaluation_data = generate_evals(n_students, n_evals)
         data_to_excel_pd(directory_name, group, names, evaluation_data, attendance_data)
 
-
-
-    return directory_name
-
-create_groups(7)
