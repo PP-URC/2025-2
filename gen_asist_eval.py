@@ -55,7 +55,7 @@ def data_to_excel_pd(directory, group, names, evaluation_data, attendance_data):
 
 
 
-    print(f"✅ Saved {len(names)} students to {filename}")
+    print(f"✅  {len(names)} students to {filename}")
 
 
 def generate_names(num_students):
@@ -80,7 +80,6 @@ def create_groups(n_groups, n_lessons=17, n_evals=10, min_students=10, max_stude
     print("=" * 60)
 
     for group in groups:
-        print(f"\n📚 Creando {group}")
 
         n_students = np.random.randint(min_students, max_students+1)
         names = generate_names(n_students)
