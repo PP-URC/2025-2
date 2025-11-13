@@ -9,15 +9,7 @@ import sys
 
 fake = Faker('es_MX')
 np.random.seed(42)
-fake.seed_instance(42)
-
-
-
-def generator_mat(start=264_421_500):
-    counter = start
-    while True:
-        yield counter
-        counter += 1
+fake.seed_instance(42
 
 
 
@@ -104,7 +96,7 @@ def data_to_excel_pd(directory, group, matriculas, names, evaluation_data, atten
 matricula_generator = generator_mat()
 
 
-def generate_matriculas(start=264_421_500, num_students):
+def generate_matriculas(num_students, start=264_421_500):
     matriculas = list(range(start, start + nums_students))
     np.random.shuffle(matriculas)
     return matriculas
@@ -119,7 +111,7 @@ def generate_names(num_students):
         names.append(name)
     return names
 
-def create_groups(n_groups, matriculas, n_lessons=17, n_evals=10, min_students=10, max_students=25):
+def create_groups(n_groups, matriculas=matriculas, n_lessons=17, n_evals=10, min_students=10, max_students=25):
 
     groups = [f"Grupo_{n}" for n in range(1, n_groups + 1)]
     populations = np.random.randint(min_students, max_students, 6)
