@@ -9,7 +9,7 @@ import sys
 
 fake = Faker('es_MX')
 np.random.seed(42)
-fake.seed_instance(42
+fake.seed_instance(42)
 
 
 
