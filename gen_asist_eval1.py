@@ -110,7 +110,7 @@ def generate_names(num_students):
         names.append(name)
     return names
 
-def create_groups(n_groups, matriculas=matriculas, n_lessons=17, n_evals=10, min_students=10, max_students=25):
+def create_groups(n_groups, n_lessons=17, n_evals=10, min_students=10, max_students=25):
 
     groups = [f"Grupo_{n}" for n in range(1, n_groups + 1)]
     populations = np.random.randint(min_students, max_students, 6)
