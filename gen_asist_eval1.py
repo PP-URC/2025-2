@@ -103,7 +103,13 @@ def data_to_excel_pd(directory, group, matriculas, names, evaluation_data, atten
 
 matricula_generator = generator_mat()
 
-def generate_names_and_mat(num_students):
+
+def generate_matriculas(start=264_421_500, num_students):
+    matriculas = list(range(start, start + nums_students))
+    np.random.shuffle(matriculas)
+    return matriculas
+
+def generate_names(num_students):
 
     fake = Faker('es_MX')
 
@@ -111,24 +117,25 @@ def generate_names_and_mat(num_students):
     for _ in range(num_students):
         name = f"{fake.first_name()} {fake.last_name()} {fake.last_name()}"
         names.append(name)
-        matricula = next(matricula_generator)
-        matriculas.append(matricula)
+    return names
 
-    return names, matriculas
-
-def create_groups(n_groups, n_lessons=17, n_evals=10, min_students=10, max_students=25):
+def create_groups(n_groups, n_lessons=17, n_evals=10, min_students=10, max_students=25, matriculas):
 
     groups = [f"Grupo_{n}" for n in range(1, n_groups + 1)]
+    populations = np.random.randint(min_students, max_students, 6)
+    total_students = sum(populations)
+    matriculas = generate_matriculas(total_students)
     # Create directory
     directory_name = 'asistencia_calificaciones'
     os.makedirs(directory_name, exist_ok=True)
 
     print("🎓 GENERANDO DATOS DE ESTUDIANTES POR GRUPO")
 
-    for group in groups:
-
-        n_students = np.random.randint(min_students, max_students+1)
-        names, matriculas = generate_names_and_mat(n_students)
+    for group, population in zip(groups, populations):
+        count = 0
+        names = generate_names(population)
+        matriculas_group = matriculas[count, population]
+        count += population
         attendance_data = generate_attendance(n_students, n_lessons)
         evaluation_data = generate_evals(n_students, n_evals)
         data_to_excel_pd(directory_name, group, matriculas, names, evaluation_data, attendance_data)
