@@ -93,7 +93,6 @@ def data_to_excel_pd(directory, group, matriculas, names, evaluation_data, atten
 
     print(f"✅  {len(names)} students to {filename}")
 
-matricula_generator = generator_mat()
 
 
 def generate_matriculas(num_students, start=264_421_500):
