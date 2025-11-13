@@ -125,7 +125,7 @@ def create_groups(n_groups, n_lessons=17, n_evals=10, min_students=10, max_stude
     for group, population in zip(groups, populations):
         count = 0
         names = generate_names(population)
-        matriculas_group = matriculas[count, population]
+        matriculas_group = matriculas[count:population]
         count += population
         attendance_data = generate_attendance(n_students, n_lessons)
         evaluation_data = generate_evals(n_students, n_evals)
