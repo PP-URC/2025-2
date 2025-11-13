@@ -96,7 +96,7 @@ def data_to_excel_pd(directory, group, matriculas, names, evaluation_data, atten
 
 
 def generate_matriculas(num_students, start=264_421_500):
-    matriculas = list(range(start, start + nums_students))
+    matriculas = list(range(start, start + num_students))
     np.random.shuffle(matriculas)
     return matriculas
 
