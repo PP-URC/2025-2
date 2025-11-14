@@ -130,6 +130,6 @@ def create_groups(n_groups, n_lessons=17, n_evals=10, min_students=10, max_stude
         for subject in subjects:
             attendance_data = generate_attendance(population, n_lessons)
             evaluation_data = generate_evals(population, n_evals)
-            group_name = f"{subject}_{group}"
+            group_name = f"{subject}:{group}"
             data_to_excel_pd(directory_name, group_name, matriculas_group, names, evaluation_data, attendance_data)
 
