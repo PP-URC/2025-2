@@ -1,11 +1,12 @@
-def execute_sql(query, conn):
+def execute_sql(query, conn, silent=False):
     cursor = conn.cursor()
     for subq in query.split(";"):
         if not subq.strip(): continue
         try:
             cursor.execute(subq)
-            print("executed:")
-            print(subq)
+            if not silent:
+                print("executed:")
+                print(subq)
         except Exception as e:
             print(e)
     
