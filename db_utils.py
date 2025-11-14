@@ -8,7 +8,6 @@ def execute_sql(query, conn):
             print(subq)
         except Exception as e:
             print(e)
-        cursor.close()
     
 def print_db(dbname, connection):
     """
