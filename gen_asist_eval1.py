@@ -111,7 +111,7 @@ def generate_names(num_students):
     return names
 
 def create_groups(n_groups, n_lessons=17, n_evals=10, min_students=10, max_students=25):
-
+    
     groups = [f"Grupo_{n}" for n in range(1, n_groups + 1)]
     populations = np.random.randint(min_students, max_students, 6)
     total_students = sum(populations)
@@ -119,7 +119,7 @@ def create_groups(n_groups, n_lessons=17, n_evals=10, min_students=10, max_stude
     # Create directory
     directory_name = 'asistencia_calificaciones'
     os.makedirs(directory_name, exist_ok=True)
-
+    subjects = ["Calculo Integral", "Bases de Datos", "Contabilidad Financiera", "Estructuras de Datos", "Pensamiento Complejo", "Probabilidad"]
     print("🎓 GENERANDO DATOS DE ESTUDIANTES POR GRUPO")
 
     for group, population in zip(groups, populations):
@@ -127,7 +127,9 @@ def create_groups(n_groups, n_lessons=17, n_evals=10, min_students=10, max_stude
         names = generate_names(population)
         matriculas_group = matriculas[count:population]
         count += population
-        attendance_data = generate_attendance(population, n_lessons)
-        evaluation_data = generate_evals(population, n_evals)
-        data_to_excel_pd(directory_name, group, matriculas_group, names, evaluation_data, attendance_data)
+        for subject is subjects:
+            attendance_data = generate_attendance(population, n_lessons)
+            evaluation_data = generate_evals(population, n_evals)
+            group_name = f"{subject}_{group}"
+            data_to_excel_pd(directory_name, group, matriculas_group, names, evaluation_data, attendance_data)
 
