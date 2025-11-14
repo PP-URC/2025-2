@@ -112,7 +112,7 @@ def generate_names(num_students):
 
 def create_groups(n_groups, n_lessons=17, n_evals=10, min_students=10, max_students=25):
     
-    groups = [f"Grupo_{n}" for n in range(1, n_groups + 1)]
+    groups = [f"Grupo{n}" for n in range(1, n_groups + 1)]
     populations = np.random.randint(min_students, max_students, 6)
     total_students = sum(populations)
     matriculas = generate_matriculas(total_students)
@@ -130,6 +130,6 @@ def create_groups(n_groups, n_lessons=17, n_evals=10, min_students=10, max_stude
         for subject in subjects:
             attendance_data = generate_attendance(population, n_lessons)
             evaluation_data = generate_evals(population, n_evals)
-            group_name = f"{subject}:{group}"
+            group_name = f"{subject}_{group}"
             data_to_excel_pd(directory_name, group_name, matriculas_group, names, evaluation_data, attendance_data)
 
