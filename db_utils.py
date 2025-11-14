@@ -1,7 +1,8 @@
 def execute_sql(query, conn, silent=False):
     cursor = conn.cursor()
     for subq in query.split(";"):
-        if not subq.strip(): continue
+        subq = subq.strip()
+        if not subq: continue
         try:
             cursor.execute(subq)
             if not silent:
