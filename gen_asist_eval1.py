@@ -119,7 +119,7 @@ def create_groups(n_groups, n_lessons=17, n_evals=10, min_students=10, max_stude
     # Create directory
     directory_name = 'asistencia_calificaciones'
     os.makedirs(directory_name, exist_ok=True)
-    subjects = ["Calculo Integral", "Bases de Datos", "Contabilidad Financiera", "Estructuras de Datos", "Pensamiento Complejo", "Probabilidad"]
+    subjects = ["Calculo_Integral", "Bases_de_Datos", "Contabilidad_Financiera", "Estructuras_de_Datos", "Pensamiento_Complejo", "Probabilidad"]
     print("🎓 GENERANDO DATOS DE ESTUDIANTES POR GRUPO")
 
     for group, population in zip(groups, populations):
