@@ -1,14 +1,14 @@
 def execute_sql(query, conn):
     cursor = conn.cursor()
     for subq in query.split(";"):
-    if not subq.strip(): continue
-    try:
-        cursor.execute(subq)
-        print("executed:")
-        print(subq)
-    except Exception as e:
-        print(e)
-    cursor.close()
+        if not subq.strip(): continue
+        try:
+            cursor.execute(subq)
+            print("executed:")
+            print(subq)
+        except Exception as e:
+            print(e)
+        cursor.close()
     
 def print_db(dbname, connection):
     """
