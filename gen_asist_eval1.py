@@ -127,7 +127,7 @@ def create_groups(n_groups, n_lessons=17, n_evals=10, min_students=10, max_stude
         names = generate_names(population)
         matriculas_group = matriculas[count:population]
         count += population
-        for subject is subjects:
+        for subject in subjects:
             attendance_data = generate_attendance(population, n_lessons)
             evaluation_data = generate_evals(population, n_evals)
             group_name = f"{subject}_{group}"
