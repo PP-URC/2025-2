@@ -1,9 +1,3 @@
-DB_CONFIG = {
-    'host': 'localhost',
-    'user': 'user',
-    'password': 'pass'
-}
-
 def execute_sql(query, conn):
     cursor = conn.cursor()
     for subq in query.split(";"):
