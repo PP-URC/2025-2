@@ -9,7 +9,7 @@ def execute_sql(query, conn):
         except Exception as e:
             print(e)
     
-def print_db(dbname, connection):
+def print_db(dbname, conn):
     """
     print_db(dbname, connection): -> None
     prints all tables in db using connection
