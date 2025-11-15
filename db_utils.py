@@ -27,10 +27,6 @@ def print_db(dbname, conn):
         print()
 
 def print_table(name, headers, lines):
-    if not lines:
-        return
-    if not lines[0]:
-        return
     table = list()
     column_widths = list(map(len, headers))
 
@@ -50,8 +46,7 @@ def print_table(name, headers, lines):
     print(header_line)
     print(separator)
     #print("| " + " | ".join(map( lambda ind, x: f"x:>{column_lengths[ind]}", enumerate(headers))) + " |")
-    if not table:
-        table = [" "]
+
     for line in table:
         print("| " + " | ".join(f"{x:.>{width}}" for x, width in zip(line, column_widths)) + " |")
     print(separator)
