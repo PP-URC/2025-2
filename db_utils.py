@@ -16,6 +16,7 @@ def print_db(dbname, conn):
     prints all tables in db using connection
     """
     cursor = conn.cursor()
+    cursor.execute("USE {dbname}")
     cursor.execute("SHOW TABLES")
     tables = cursor.fetchall()
 
