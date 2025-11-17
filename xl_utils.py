@@ -1,5 +1,6 @@
 import glob
 import os
+import pandas as pd
 
 def preview_excel_data(path):
     """preview_excel_data(path) -> None
