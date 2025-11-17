@@ -1,31 +1,37 @@
-REPORT_DBNAME = "reporte"
+REPORT_DBNAME = "reporte_asist_ren"
 SURVEY_DBNAME = "encuesta"
 
-REPORT_DB_SQL = """CREATE DATABASE reporte_asist_rend;
+REPORT_DB_SQL = """CREATE DATABASE IF NOT EXISTS reporte_asist_rend;
 USE reporte_asist_rend;
 
 CREATE TABLE IF NOT EXISTS estudiantes (
     matricula BIGINT PRIMARY KEY,
     nombre_completo VARCHAR(200) NOT NULL,
     grupo VARCHAR(50),
-    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_grupo (grupo)  -- Keep this one
 );
 
 CREATE TABLE IF NOT EXISTS asistencia (
-    matricula INT AUTO_INCREMENT PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    matricula BIGINT,
     fecha DATE NOT NULL,
     presente BOOLEAN DEFAULT FALSE,
     materia VARCHAR(100),
-    FOREIGN KEY (matricula) REFERENCES estudiantes(matricula)
+    FOREIGN KEY (matricula) REFERENCES estudiantes(matricula),
+    INDEX idx_matricula (matricula),  -- Keep this one
+    INDEX idx_fecha (fecha)           -- Keep this one
 );
 
 CREATE TABLE IF NOT EXISTS evaluaciones (
-    matricula BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    matricula BIGINT,
     materia VARCHAR(100),
-    tipo_evaluacion VARCHAR(50),  -- 'Parcial 1', 'Tarea', 'Examen Final'
+    tipo_evaluacion VARCHAR(50),
     calificacion DECIMAL(4,2),
     fecha_evaluacion DATE,
-    FOREIGN KEY (matricula) REFERENCES estudiantes(matricula)
+    FOREIGN KEY (matricula) REFERENCES estudiantes(matricula),
+    INDEX idx_matricula (matricula)  -- Keep this one
 );
 
 CREATE TABLE IF NOT EXISTS reporte_estudiantes_problematicos (
@@ -38,9 +44,8 @@ CREATE TABLE IF NOT EXISTS reporte_estudiantes_problematicos (
     materias_reprobadas INT DEFAULT 0,
     problemas_detectados TEXT,
     gravedad ENUM('leve', 'moderado', 'grave', 'critico'),
-    fecha_reporte TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_gravedad (gravedad),
-    INDEX idx_grupo (grupo)
+    fecha_reporte TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    -- Removed optional indexes
 );
 
 CREATE TABLE IF NOT EXISTS reporte_grupos_problematicos (
@@ -52,6 +57,7 @@ CREATE TABLE IF NOT EXISTS reporte_grupos_problematicos (
     tasa_asistencia_grupo DECIMAL(5,2),
     problemas_comunes TEXT,
     fecha_reporte TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    -- No indexes needed (small table)
 );"""
 
 SURVEY_DB_SQL = """DROP DATABASE IF EXISTS encuesta;
