@@ -10,7 +10,7 @@ def preview_xl_data(path='asistencia_calificaciones'):
     prints first 3 rows of all sheets"""
   
     excel_files = glob.glob(os.path.join(path, "*.xlsx"))
-    for file_path in excel_files:
+    for file_path in excel_files[:1]:
         filename = os.path.basename(file_path)
         print(f"📊 PREVIEW: {filename}")
         print("=" * 60)
