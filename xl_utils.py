@@ -4,7 +4,7 @@ import pandas as pd
 from schemas import REPORT_DBNAME
 
 
-def preview_excel_data(path='asistencia_calificaciones'):
+def preview_xl_data(path='asistencia_calificaciones'):
     """preview_excel_data(path) -> None
     prints first 3 rows of all sheets"""
 
@@ -31,7 +31,7 @@ def preview_excel_data(path='asistencia_calificaciones'):
         except Exception as e:
             print(f"❌ Error reading {filename}: {e}")
 
-def analyze_academic_problems(path='asistencia_calificaciones'):
+def analyze_problems(path='asistencia_calificaciones'):
     """analyze_academic_issues(path): -> Tuple[List, List]
     returns tuple of 2 lists with group and student problems
     Analyze *.xlsx files
