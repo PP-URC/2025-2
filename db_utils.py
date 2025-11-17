@@ -52,16 +52,6 @@ def print_table(name, headers, lines):
         print("| " + " | ".join(f"{x:.>{width}}" for x, width in zip(line, column_widths)) + " |")
     print(separator)
 
-
-def generate_er(user="user", password="pass", host="localhost"):
-  """eralchemy"""
-  from eralchemy import render_er
-  
-  connection_str = f'mysql+mysqlconnector://{user}:{password}@{host}/{dbname}'
-  render_er(connection_str, 'er_diagram.png')
-  from IPython.display import Image
-  Image('er_diagram.png')
-
 def generate_er(dbname, conn):
   """eralchemy"""
   from eralchemy import render_er
