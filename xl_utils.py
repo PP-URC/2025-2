@@ -1,6 +1,8 @@
 import glob
 import os
 import pandas as pd
+from schemas import REPORT_DBNAME
+
 
 def preview_excel_data(path='asistencia_calificaciones'):
     """preview_excel_data(path) -> None
@@ -133,5 +135,6 @@ def print_report(problems_group, problems_student):
                 for problema in st['problemas']:
                     print(f"         ⚠️  {problema}")
 
-generate_report_sql(problems_group, problems_students, conn, db="")
+generate_report_sql(problems_group, problems_students, conn, db=REPORT_DBNAME):
+    pass
 
