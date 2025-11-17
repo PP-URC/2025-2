@@ -61,3 +61,12 @@ def generate_er(user="user", password="pass", host="localhost"):
   render_er(connection_str, 'er_diagram.png')
   from IPython.display import Image
   Image('er_diagram.png')
+
+def generate_er(dbname, conn):
+  """eralchemy"""
+  from eralchemy import render_er
+  connection_str = f"mysql+mysqlconnector://{conn.user}:{conn._password}@{conn._host}:{conn._port}/{dbname}"
+  connection_str = f'mysql+mysqlconnector://{user}:{password}@{host}/{dbname}'
+  render_er(connection_str, 'er_diagram.png')
+  from IPython.display import Image
+  Image('er_diagram.png')
