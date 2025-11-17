@@ -1,3 +1,6 @@
+import glob
+import os
+
 def preview_excel_data(path):
     """preview_excel_data(path) -> None
     prints first 3 rows of all sheets"""
