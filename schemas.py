@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS estudiantes (
     nombre_completo VARCHAR(200) NOT NULL,
     grupo VARCHAR(50),
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_grupo (grupo)  -- Keep this one
+    INDEX idx_grupo (grupo)
 );
 
 CREATE TABLE IF NOT EXISTS asistencia (
