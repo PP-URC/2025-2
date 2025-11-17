@@ -1,4 +1,4 @@
-REPORT_DBNAME = "reporte_asist_ren"
+REPORT_DBNAME = "reporte_asist_rend"
 SURVEY_DBNAME = "encuesta"
 
 REPORT_DB_SQL = """CREATE DATABASE IF NOT EXISTS reporte_asist_rend;
