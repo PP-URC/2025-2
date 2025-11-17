@@ -133,3 +133,68 @@ def create_groups(n_groups, n_lessons=17, n_evals=10, min_students=10, max_stude
             group_name = f"{subject}_{group}"
             data_to_excel_pd(directory_name, group_name, matriculas_group, names, evaluation_data, attendance_data)
 
+def create_groups(n_groups=5, n_lessons=17, n_evals=10, min_students=10, max_students=25):
+    """
+    Generate student data organized by subject with groups as sheets
+    
+    New structure:
+    asistencia_calificaciones/
+    ├── Calculo_Integral.xlsx
+    │   ├── Grupo1_Calificaciones
+    │   ├── Grupo1_Asistencia
+    │   ├── Grupo2_Calificaciones
+    │   └── ...
+    ├── Bases_de_Datos.xlsx
+    └── ...
+    """
+    groups = [f"Grupo{n}" for n in range(1, n_groups + 1)]
+    populations = np.random.randint(min_students, max_students, n_groups)
+    total_students = sum(populations)
+    matriculas = generate_matriculas(total_students)
+    
+    # Create directory
+    directory_name = 'asistencia_calificaciones'
+    os.makedirs(directory_name, exist_ok=True)
+    
+    subjects = [
+        "Calculo_Integral", 
+        "Bases_de_Datos", 
+        "Contabilidad_Financiera", 
+        "Estructuras_de_Datos", 
+        "Pensamiento_Complejo", 
+        "Probabilidad"
+    ]
+    
+    print("🎓 GENERANDO DATOS POR MATERIA (GRUPOS COMO HOJAS SEPARADAS)")
+    print(f"📚 Materias: {', '.join(subjects)}")
+    print(f"👥 Grupos: {', '.join(groups)}")
+    print(f"📊 Total de estudiantes: {total_students}")
+    print("-" * 50)
+    
+    # Generate all data first, organized by subject
+    subject_data = {subject: {} for subject in subjects}
+    
+    count = 0
+    for group, population in zip(groups, populations):
+        names = generate_names(population)
+        matriculas_group = matriculas[count:count + population]
+        count += population
+        
+        # Generate data for this group across all subjects
+        for subject in subjects:
+            attendance_data = generate_attendance(population, n_lessons)
+            evaluation_data = generate_evals(population, n_evals)
+            
+            subject_data[subject][group] = {
+                'matriculas': matriculas_group,
+                'names': names,
+                'evaluation_data': evaluation_data,
+                'attendance_data': attendance_data
+            }
+    
+    # Create Excel files (one per subject)
+    for subject, group_data in subject_data.items():
+        data_to_excel_by_subject(directory_name, subject, group_data, n_lessons, n_evals)
+    
+    print("-" * 50)
+    print(f"📁 Archivos guardados en: {directory_name}/")
