@@ -69,4 +69,4 @@ def generate_er(dbname, conn):
   #connection_str = f'mysql+mysqlconnector://{user}:{password}@{host}/{dbname}'
   render_er(connection_str, 'er_diagram.png')
   from IPython.display import Image
-  Image('er_diagram.png')
+  Image(f'{dbname}_er_diagram.png')
