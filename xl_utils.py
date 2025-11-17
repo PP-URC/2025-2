@@ -33,8 +33,7 @@ def analyze_problems(path='asistencia_calificaciones'):
     returns tuple of 2 lists with group and student problems
     Analyze *.xlsx files
     """
-    print("🎓 ANÁLISIS ACADÉMICO - REPORTE DE PROBLEMAS")
-    print("=" * 60)
+    print("🎓 ANÁLISIS ACADÉMICO - REPORTE DE PROBLEMAS\nEN EL DIRECTORIO {path}")
 
     excel_files = glob.glob(os.path.join(path, "*.xlsx"))
 
