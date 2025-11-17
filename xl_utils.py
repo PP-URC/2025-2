@@ -2,7 +2,7 @@ import glob
 import os
 import pandas as pd
 
-def preview_excel_data(path):
+def preview_excel_data(path='asistencia_calificaciones'):
     """preview_excel_data(path) -> None
     prints first 3 rows of all sheets"""
 
@@ -132,3 +132,6 @@ def print_report(problems_group, problems_student):
                 print(f"         📊 Asistencia: {st['asistencia']:.1%} | Rendimiento: {st['rendimiento']:.1f}/10")
                 for problema in st['problemas']:
                     print(f"         ⚠️  {problema}")
+
+generate_report_sql(problems_group, problems_students, conn, db="")
+
