@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS reporte_estudiantes_problematicos (
     grupo VARCHAR(50),
     promedio_general DECIMAL(4,2),
     tasa_asistencia DECIMAL(5,2),
-    materias_reprobadas INT DEFAULT 0,
+    materia VARCHAR(100),
     problemas_detectados TEXT,
     gravedad ENUM('leve', 'moderado', 'grave', 'critico'),
     fecha_reporte TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
