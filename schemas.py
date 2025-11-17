@@ -44,8 +44,8 @@ CREATE TABLE IF NOT EXISTS reporte_estudiantes_problematicos (
     materias_reprobadas INT DEFAULT 0,
     problemas_detectados TEXT,
     gravedad ENUM('leve', 'moderado', 'grave', 'critico'),
-    fecha_reporte TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    -- Removed optional indexes
+    fecha_reporte TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY matricula REFERENCES estudiantes(matricula)
 );
 
 CREATE TABLE IF NOT EXISTS reporte_grupos_problematicos (
