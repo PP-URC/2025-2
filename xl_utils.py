@@ -35,7 +35,7 @@ def analyze_problems(path='asistencia_calificaciones'):
     print("🎓 ANÁLISIS ACADÉMICO - REPORTE DE PROBLEMAS")
     print("=" * 60)
 
-    excel_files = glob.glob(os.path.join(directory, "*.xlsx"))
+    excel_files = glob.glob(os.path.join(path, "*.xlsx"))
 
     if not excel_files:
         print("No se encontraron archivos Excel")
