@@ -96,19 +96,18 @@ def data_to_excel_pd(directory, group, matriculas, names, evaluation_data, atten
 def data_to_excel_by_subject(directory, subject, group_data, n_lessons, n_evals):
 
     filename = f"{subject}.xlsx"
-    filepath = os.path.join(directory, filename)
-    for group in group_data:        
-        evaluation_df = pd.DataFrame(group["evaluation_data"])        
-        evaluation_df.insert(0, 'Matricula', group["matriculas"])
-        evaluation_df.insert(1, 'Nombre', group["names"])
-        attendance_df = pd.DataFrame(group["attendance_data"])
-        attendance_df.insert(0, 'Matricula', matriculas)
-        attendance_df.insert(1, 'Nombre', names)
-        with pd.ExcelWriter(filepath, engine='openpyxl') as writer:
-            # Save evaluations to second sheet
-            evaluation_df.to_excel(writer, sheet_name=f'Evaluaciones_{group["group"]}', index=False)
-            # Save attendance to first sheet
-            attendance_df.to_excel(writer, sheet_name=f'Asistencia_{group["group"]}', index=False)
+    filepath = os.path.join(directory, filename)    
+    evaluation_df = pd.DataFrame(group_data["evaluation_data"])        
+    evaluation_df.insert(0, 'Matricula', group_data["matriculas"])
+    evaluation_df.insert(1, 'Nombre', group_data["names"])
+    attendance_df = pd.DataFrame(group_data["attendance_data"])
+    attendance_df.insert(0, 'Matricula', matriculas)
+    attendance_df.insert(1, 'Nombre', names)
+    with pd.ExcelWriter(filepath, engine='openpyxl') as writer:
+        # Save evaluations to second sheet
+        evaluation_df.to_excel(writer, sheet_name=f'Evaluaciones_{group_data["group"]}', index=False)
+        # Save attendance to first sheet
+        attendance_df.to_excel(writer, sheet_name=f'Asistencia_{group_data["group"]}', index=False)
 
 
 
