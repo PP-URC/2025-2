@@ -15,7 +15,6 @@ fake.seed_instance(42)
 
 def generate_attendance(n_students, n_sessions, base_attendance=0.8, variability=0.15):
 
-    # Individual attendance rates centered around base_attendance
     student_rates = np.random.normal(base_attendance, variability, n_students)
     student_rates = np.clip(student_rates, 0.1, 0.98)
     attendance = np.zeros((n_students, n_sessions))
@@ -96,18 +95,19 @@ def data_to_excel_pd(directory, group, matriculas, names, evaluation_data, atten
 def data_to_excel_by_subject(directory, subject, group_data, n_lessons, n_evals):
 
     filename = f"{subject}.xlsx"
-    filepath = os.path.join(directory, filename)    
-    evaluation_df = pd.DataFrame(group_data["evaluation_data"])        
-    evaluation_df.insert(0, 'Matricula', group_data["matriculas"])
-    evaluation_df.insert(1, 'Nombre', group_data["names"])
-    attendance_df = pd.DataFrame(group_data["attendance_data"])
-    attendance_df.insert(0, 'Matricula', matriculas)
-    attendance_df.insert(1, 'Nombre', names)
-    with pd.ExcelWriter(filepath, engine='openpyxl') as writer:
-        # Save evaluations to second sheet
-        evaluation_df.to_excel(writer, sheet_name=f'Evaluaciones_{group_data["group"]}', index=False)
-        # Save attendance to first sheet
-        attendance_df.to_excel(writer, sheet_name=f'Asistencia_{group_data["group"]}', index=False)
+    filepath = os.path.join(directory, filename) 
+    for group, data in group_data.items():
+        evaluation_df = pd.DataFrame(data["evaluation_data"])        
+        evaluation_df.insert(0, 'Matricula', data["matriculas"])
+        evaluation_df.insert(1, 'Nombre', data["names"])
+        attendance_df = pd.DataFrame(data["attendance_data"])
+        attendance_df.insert(0, 'Matricula', matriculas)
+        attendance_df.insert(1, 'Nombre', names)
+        with pd.ExcelWriter(filepath, engine='openpyxl') as writer:
+            # Save evaluations to second sheet
+            evaluation_df.to_excel(writer, sheet_name=f'Evaluaciones_{group}', index=False)
+            # Save attendance to first sheet
+            attendance_df.to_excel(writer, sheet_name=f'Asistencia_{data[group]}', index=False)
 
 
 
@@ -196,7 +196,6 @@ def create_groups(n_groups=5, n_lessons=17, n_evals=10, min_students=10, max_stu
         matriculas_group = matriculas[count:count + population]
         count += population
         
-        # Generate data for this group across all subjects
         for subject in subjects:
             attendance_data = generate_attendance(population, n_lessons)
             evaluation_data = generate_evals(population, n_evals)
@@ -205,11 +204,9 @@ def create_groups(n_groups=5, n_lessons=17, n_evals=10, min_students=10, max_stu
                 'matriculas': matriculas_group,
                 'names': names,
                 'evaluation_data': evaluation_data,
-                'attendance_data': attendance_data,
-                'group': group
+                'attendance_data': attendance_data
             }
     
-    # Create Excel files (one per subject)
     for subject, group_data in subject_data.items():
         data_to_excel_by_subject(directory_name, subject, group_data, n_lessons, n_evals)
     
