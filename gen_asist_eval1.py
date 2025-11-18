@@ -181,13 +181,13 @@ def create_groups(n_groups=5, n_lessons=17, n_evals=10, min_students=10, max_stu
         "Probabilidad"
     ]
     
-    print("🎓 GENERANDO DATOS POR MATERIA (GRUPOS COMO HOJAS SEPARADAS)")
+    print("🎓 GENERANDO DATOS POR MATERIA")
     print(f"📚 Materias: {', '.join(subjects)}")
     print(f"👥 Grupos: {', '.join(groups)}")
     print(f"📊 Total de estudiantes: {total_students}")
     print("-" * 50)
     
-    # Generate all data first, organized by subject
+    all_students_data = set()
     subject_data = {subject: {} for subject in subjects}
     
     count = 0
@@ -195,7 +195,8 @@ def create_groups(n_groups=5, n_lessons=17, n_evals=10, min_students=10, max_stu
         names = generate_names(population)
         matriculas_group = matriculas[count:count + population]
         count += population
-        
+        for matricula, name in zip(matriculas_group, names):
+            all_students_data.add((matricula, name, group))
         for subject in subjects:
             attendance_data = generate_attendance(population, n_lessons)
             evaluation_data = generate_evals(population, n_evals)
@@ -212,3 +213,4 @@ def create_groups(n_groups=5, n_lessons=17, n_evals=10, min_students=10, max_stu
     
     print("-" * 50)
     print(f"📁 Archivos guardados en: {directory_name}/")
+    return list(all_students_data)
