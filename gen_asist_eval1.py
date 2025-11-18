@@ -36,11 +36,11 @@ def generate_evals(n_students, n_assignments, min_score=5, max_score=10):
     for i in range(n_students):
         # Asignar perfil de rendimiento basado en posición
         if i % 5 == 0:  # 20% - Rendimiento crítico
-            base_prob = [0.3, 0.25, 0.2, 0.15, 0.08, 0.02]  # Sesgado hacia 5-7
-            variability = 1.5  # Alta variabilidad
+            base_prob = [0.25, 0.25, 0.2, 0.2, 0.08, 0.02]  # Sesgado hacia 5-7
+            variability = 1.3  
         elif i % 5 == 1:  # 20% - Rendimiento bajo
             base_prob = [0.15, 0.2, 0.25, 0.2, 0.15, 0.05]  # Sesgado hacia 6-8
-            variability = 1.2
+            variability = 1
         elif i % 5 == 2:  # 20% - Rendimiento inconsistente
             base_prob = [0.1, 0.15, 0.2, 0.2, 0.2, 0.15]  # Distribución plana
             variability = 2.0  # Muy alta variabilidad
