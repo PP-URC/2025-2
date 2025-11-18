@@ -103,7 +103,7 @@ def data_to_excel_by_subject(directory, subject, group_data, n_lessons, n_evals)
         attendance_df = pd.DataFrame(data["attendance_data"])
         attendance_df.insert(0, 'Matricula', data["matriculas"])
         attendance_df.insert(1, 'Nombre', data["names"])
-        with pd.ExcelWriter(filepath, engine='openpyxl') as writer:
+        with pd.ExcelWriter(filepath, engine='openpyxl', mode='a' if os.path.exists(filepath) else 'w') as writer:
             # Save evaluations to second sheet
             evaluation_df.to_excel(writer, sheet_name=f'Evaluaciones_{group}', index=False)
             # Save attendance to first sheet
