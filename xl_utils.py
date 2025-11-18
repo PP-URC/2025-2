@@ -142,9 +142,9 @@ def analyze_group(excel_file, subject, group, eval_sheet, att_sheet):
         score_avg = np.mean(scores_data)
         
         group_problems = []
-        if attendance_avg < 0.8:
+        if attendance_avg < 0.7:
             group_problems.append(f"Asistencia baja ({attendance_avg:.1%})")
-        if score_avg < 7.5:
+        if score_avg < 6.5:
             group_problems.append(f"Rendimiento bajo ({score_avg:.1f}/10)")
         
         group_result = {
