@@ -51,17 +51,14 @@ def generate_evals(n_students, n_assignments, min_score=5, max_score=10):
             base_prob = [0.02, 0.03, 0.05, 0.1, 0.3, 0.5]  # Sesgado hacia 9-10
             variability = 0.5  # Baja variabilidad
         
-        # Aplicar variabilidad a las probabilidades
         varied_probs = np.array(base_prob) + np.random.normal(0, 0.7, 6)
         varied_probs = np.clip(varied_probs, 0.01, 0.99)
-        varied_probs = varied_probs / varied_probs.sum()  # Normalizar
+        varied_probs = varied_probs / varied_probs.sum()  
         
-        # Generar scores para este estudiante
         student_scores = np.random.choice(scores_range, 
                                         size=n_assignments, 
                                         p=varied_probs)
         
-        # Agregar variabilidad adicional
         noise = np.random.normal(0, variability, n_assignments)
         student_scores = np.clip(student_scores + noise, min_score, max_score).astype(int)
         
