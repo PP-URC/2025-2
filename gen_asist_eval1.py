@@ -111,7 +111,7 @@ def data_to_excel_by_subject(directory, subject, group_data, n_lessons, n_evals)
 
 
 
-    print(f"✅  {len(names)} students to {filename}")
+    print(f"✅  {len(data["matriculas"])} students to {filename}")
 
 def generate_matriculas(num_students, start=264_421_500):
     matriculas = list(range(start, start + num_students))
