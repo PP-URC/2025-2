@@ -52,7 +52,7 @@ def generate_evals(n_students, n_assignments, min_score=5, max_score=10):
             variability = 0.5  # Baja variabilidad
         
         # Aplicar variabilidad a las probabilidades
-        varied_probs = np.array(base_prob) + np.random.normal(0, 0.05, 6)
+        varied_probs = np.array(base_prob) + np.random.normal(0, 0.7, 6)
         varied_probs = np.clip(varied_probs, 0.01, 0.99)
         varied_probs = varied_probs / varied_probs.sum()  # Normalizar
         
