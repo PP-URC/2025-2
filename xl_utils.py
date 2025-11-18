@@ -87,6 +87,111 @@ def analyze_problems(path='asistencia_calificaciones'):
                 })
     return problems_groups, problems_students
 
+def analyze_problems(path='asistencia_calificaciones'):
+    """Analyze academic issues with new Excel structure"""
+    print(f"🎓 ANÁLISIS ACADÉMICO - NUEVA ESTRUCTURA\nDIRECTORIO: {path}")
+
+    excel_files = glob.glob(os.path.join(path, "*.xlsx"))
+    
+    if not excel_files:
+        print("No se encontraron archivos Excel")
+        return [], []
+
+    problems_groups = []
+    problems_students = []
+
+    for excel_filename in excel_files:
+        subject = os.path.basename(excel_filename).replace('.xlsx', '')
+        print(f"\n📖 Materia: {subject}")
+        
+        excel_file = pd.ExcelFile(excel_filename)
+        
+        # Process each evaluation sheet (find corresponding attendance sheet)
+        for sheet_name in excel_file.sheet_names:
+            if sheet_name.startswith('Evaluaciones_'):
+                group = sheet_name.replace('Evaluaciones_', '')
+                att_sheet = f'Asistencia_{group}'
+                
+                if att_sheet not in excel_file.sheet_names:
+                    continue
+                
+                # Analyze this group
+                group_problems, student_problems = analyze_group(
+                    excel_filename, subject, group, sheet_name, att_sheet
+                )
+                
+                if group_problems:
+                    problems_groups.append(group_problems)
+                
+                problems_students.extend(student_problems)
+    
+    return problems_groups, problems_students
+
+def analyze_group(excel_file, subject, group, eval_sheet, att_sheet):
+    """Analyze a specific group within a subject"""
+    try:
+        df_scores = pd.read_excel(excel_file, sheet_name=eval_sheet)
+        df_attendance = pd.read_excel(excel_file, sheet_name=att_sheet)
+        
+        matriculas = df_attendance.iloc[:, 0].tolist()
+        attendance_data = df_attendance.iloc[:, 2:].values
+        scores_data = df_scores.iloc[:, 2:].values
+        
+        # Group analysis
+        attendance_avg = np.mean(attendance_data)
+        score_avg = np.mean(scores_data)
+        
+        group_problems = []
+        if attendance_avg < 0.8:
+            group_problems.append(f"Asistencia baja ({attendance_avg:.1%})")
+        if score_avg < 7.5:
+            group_problems.append(f"Rendimiento bajo ({score_avg:.1f}/10)")
+        
+        group_result = {
+            'group': group,
+            'subject': subject,
+            'problems': group_problems,
+            'attendance_avg': attendance_avg,
+            'score_avg': score_avg
+        } if group_problems else None
+        
+        # Student analysis
+        student_problems = []
+        for i, matricula in enumerate(matriculas):
+            if i >= len(attendance_data) or i >= len(scores_data):
+                continue
+                
+            att_student = np.mean(attendance_data[i])
+            score_student = np.mean(scores_data[i])
+            
+            problems = []
+            if att_student < 0.7:
+                problems.append(f"asistencia crítica ({att_student:.1%})")
+            if score_student < 6:
+                problems.append(f"rendimiento crítico ({score_student:.1f}/10)")
+            
+            if problems:
+                student_problems.append({
+                    'group': group,
+                    'subject': subject,
+                    'matricula': matricula,
+                    'problems': problems,
+                    'attendance': att_student,
+                    'score': score_student
+                })
+        
+        # Print summary for this group
+        status = "⚠️" if group_problems else "✅"
+        student_status = f", {len(student_problems)} estudiantes problemáticos" if student_problems else ""
+        print(f"   {status} {group}: {len(group_problems)} problemas grupales{student_status}")
+        
+        return group_result, student_problems
+        
+    except Exception as e:
+        print(f"❌ Error en {group}: {e}")
+        return None, []
+
+
 def print_report(problems_group, problems_student):
     """
     Print report per group and student
