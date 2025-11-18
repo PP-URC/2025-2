@@ -93,7 +93,7 @@ def data_to_excel_pd(directory, group, matriculas, names, evaluation_data, atten
 
     print(f"✅  {len(names)} students to {filename}")
 
-def data_to_excel_by_subject(directory_name, subject, group_data, n_lessons, n_evals):
+def data_to_excel_by_subject(directory, subject, group_data, n_lessons, n_evals):
 
     filename = f"{subject}.xlsx"
     filepath = os.path.join(directory, filename)
