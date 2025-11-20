@@ -204,7 +204,7 @@ def print_report(problems_group, problems_student):
     if problems_group:
         print("\nPROBLEMAS POR GRUPO:")
         for problem in problems_group:
-            print(f"   • {problem['group']}: {problem['problem']}")
+            print(f"   • {problem['group']}: {problem['problems']}")
 
     # Problemas de estudiantes
     if problems_student:
