@@ -53,7 +53,8 @@ def print_table(name, headers, lines):
     print(separator)
 
 def generate_er(dbname, conn):
-  """eralchemy"""
+  """connection_str = f"mysql+mysqlconnector://{conn.user}:{conn._password}@{conn._host}:{conn._port}/{dbname}"
+    eralchemy.render_er(connection_str, f'{dbname}_er_diagram.png')"""
   from eralchemy import render_er
   connection_str = f"mysql+mysqlconnector://{conn.user}:{conn._password}@{conn._host}:{conn._port}/{dbname}"
   #connection_str = f'mysql+mysqlconnector://{user}:{password}@{host}/{dbname}'
