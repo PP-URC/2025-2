@@ -100,35 +100,13 @@ def data_to_excel_by_subject(directory, subject, group_data, n_lessons, n_evals)
         attendance_df = pd.DataFrame(data["attendance_data"])
         attendance_df.insert(0, 'Matricula', data["matriculas"])
         attendance_df.insert(1, 'Nombre', data["names"])
-        with pd.ExcelWriter(filepath, engine='openpyxl', mode='a' if os.path.exists(filepath) else 'w') as writer:
-            # Save evaluations to second sheet
-
-            workbook = writer.book
-        
-            # Set comprehensive workbook properties
-            workbook.set_properties({
-                'title': f'Datos Académicos - {group}',
-                'subject': 'Registro de Asistencia y Evaluaciones',
-                'author': 'Sistema de Gestión Académica',
-                'manager': 'Departamento Académico',
-                'company': 'Institución Educativa',
-                'category': 'Educación',
-                'keywords': 'asistencia, calificaciones, estudiantes, educación',
-                'comments': f'Archivo generado automáticamente el {datetime.now().strftime("%Y-%m-%d")}',
-                'status': 'Completado',
-                'created': datetime.now(),
-                'modified': datetime.now()
-            })
-        
-            # Set custom document properties
-            workbook.set_custom_property('Materia', group.split('_')[0] if '_' in group else 'General')
-            workbook.set_custom_property('Grupo', group.split('_')[1] if '_' in group else group)
-            workbook.set_custom_property('Total Estudiantes', len(names))
-            workbook.set_custom_property('Tipo', 'Datos Académicos')
+        with pd.ExcelWriter(filepath, engine='xlsxwriter', mode='a' if os.path.exists(filepath) else 'w') as writer:
+           
+            
 
         
             evaluation_df.to_excel(writer, sheet_name=f'Evaluaciones_{group}', index=False)
-            # Save attendance to first sheet
+      
             attendance_df.to_excel(writer, sheet_name=f'Asistencia_{group}', index=False)
 
 
