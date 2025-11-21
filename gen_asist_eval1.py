@@ -121,8 +121,18 @@ def data_to_excel_by_subject(directory, subject, group_data, n_lessons, n_evals)
     from openpyxl import Workbook
     from openpyxl.utils.dataframe import dataframe_to_rows
     
+    # Crear workbook con TODAS las propiedades de Excel
     wb = Workbook()
-    wb.remove(wb.active)  # Eliminar hoja por defecto
+    
+    # ESTO ES CLAVE: Configurar propiedades del documento
+    wb.properties.title = f"Datos Académicos - {subject}"
+    wb.properties.subject = "Registro de Asistencia y Evaluaciones"
+    wb.properties.creator = "Sistema Académico"
+    wb.properties.keywords = "excel, educación, calificaciones"
+    wb.properties.category = "Educación"
+    
+    # Eliminar hoja por defecto
+    wb.remove(wb.active)
     
     for group, data in group_data.items():
         # Evaluaciones
@@ -143,8 +153,29 @@ def data_to_excel_by_subject(directory, subject, group_data, n_lessons, n_evals)
         for row in dataframe_to_rows(att_df, index=False, header=True):
             ws_att.append(row)
     
+    # GUARDAR con todas las propiedades
     wb.save(filepath)
-    print(f"✅ {filename} creado con {len(group_data)} grupos")
+    
+    # Verificar que se creó como Excel
+    verify_excel_file(filepath)
+    print(f"✅ {filename} creado como ARCHIVO EXCEL")
+
+def verify_excel_file(filepath):
+    """Verificar que el archivo es un Excel válido"""
+    import magic  # pip install python-magic
+    try:
+        file_type = magic.from_file(filepath)
+        print(f"   📄 Tipo detectado: {file_type}")
+        return "Excel" in file_type or "Microsoft" in file_type
+    except:
+        # Si no tienes magic, verificar con pandas
+        try:
+            pd.read_excel(filepath)
+            print(f"   ✅ Archivo Excel válido")
+            return True
+        except:
+            print(f"   ❌ Archivo corrupto")
+            return False
 
 
 
