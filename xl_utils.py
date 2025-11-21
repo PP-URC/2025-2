@@ -218,7 +218,7 @@ def print_report(problems_group, problems_student):
             print(f"\n   {group}:")
 
             for st in students_group:
-                print(f"      {staticmethod['student']}")
+                print(f"      {st['student']}")
                 print(f"         Asistencia: {st['asistencia']:.1%} | Rendimiento: {st['rendimiento']:.1f}/10")
                 for problema in st['problemas']:
                     print(f"         {problema}")
