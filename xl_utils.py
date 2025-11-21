@@ -150,10 +150,10 @@ def analyze_group(excel_file, subject, group, eval_sheet, att_sheet):
         group_result = {
             'group': group,
             'subject': subject,
-            'problems': group_problems,
+            'problems': group_problems if group_problems else None,
             'attendance_avg': attendance_avg,
             'score_avg': score_avg
-        } if group_problems else None
+        } 
         
         # Student analysis
         students_problems = list()
@@ -187,7 +187,7 @@ def analyze_group(excel_file, subject, group, eval_sheet, att_sheet):
         #print(f"   {status} {group}: {len(group_problems)} problemas grupales{student_status}")
         print(f"{status} {group}")
         for student in students_problems:
-            print(*student)
+            print(f"{student['matricula']}: {student['problems']}")
         
         return group_result, students_problems
         
@@ -215,14 +215,14 @@ def print_report(problems_group, problems_student):
         print(f"\nESTUDIANTES QUE NECESITAN ATENCIÓN ({len(problems_student)} estudiantes):")
 
         # Agrupar por grupo
-        groups = set(st['group'] for st in problems_group)
+        groups = set(st['group'] for st in problems_student)
 
         for group in groups:
-            students_group = [est for est in problems_student if est['group'] == group]
+            students_group = [st for st in problems_student if st['group'] == group]
             print(f"\n   {group}:")
 
             for st in students_group:
-                print(f"      {st['student']}")
+                print(f"      {st['matricula']}")
                 print(f"         Asistencia: {st['attendance']:.1%} | Rendimiento: {st['score']:.1f}/10")
                 for problema in st['problems']:
                     print(f"         {problema}")
