@@ -156,7 +156,7 @@ def analyze_group(excel_file, subject, group, eval_sheet, att_sheet):
         } if group_problems else None
         
         # Student analysis
-        students_problems = []
+        students_problems = list()
         for i, matricula in enumerate(matriculas):
             if i >= len(attendance_data) or i >= len(scores_data):
                 continue
@@ -166,21 +166,20 @@ def analyze_group(excel_file, subject, group, eval_sheet, att_sheet):
             
             problems_student = []
             if att_student < 0.7:
-                problems.append(f"asistencia crítica ({att_student:.1%})")
+                problems_student.append(f"asistencia crítica ({att_student:.1%})")
             if score_student < 6:
-                problems.append(f"rendimiento crítico ({score_student:.1f}/10)")
+                problems_student.append(f"rendimiento crítico ({score_student:.1f}/10)")
             
             if problems_student:
-                print(f"{matricula}: {problems_student}")
-                """student_problems.append({
+                students_problems.append({
                     'group': group,
                     'subject': subject,
                     'matricula': matricula,
-                    'problems': problems,
+                    'problems': problems_student,
                     'attendance': att_student,
                     'score': score_student
-                })"""
-                group_result['students'].append([matricula, *problems_student])
+                })
+                group_result.setdefault('students', list()).append([matricula, *problems_student])
         
         # Print summary for this group
         status = "⚠️" if group_problems else "✅"
@@ -188,9 +187,9 @@ def analyze_group(excel_file, subject, group, eval_sheet, att_sheet):
         #print(f"   {status} {group}: {len(group_problems)} problemas grupales{student_status}")
         print(f"{status} {group}")
         for student in students_problems:
-            print()
+            print(*student)
         
-        return group_result, student_problems
+        return group_result, students_problems
         
     except Exception as e:
         print(f"❌ Error en {group}: {e}")
@@ -213,7 +212,7 @@ def print_report(problems_group, problems_student):
 
     # Problemas de estudiantes
     if problems_student:
-        print(f"\nESTUDIANTES QUE NECESITAN ATENCIÓN ({len(problems_group)} estudiantes):")
+        print(f"\nESTUDIANTES QUE NECESITAN ATENCIÓN ({len(problems_student)} estudiantes):")
 
         # Agrupar por grupo
         groups = set(st['group'] for st in problems_group)
@@ -224,8 +223,8 @@ def print_report(problems_group, problems_student):
 
             for st in students_group:
                 print(f"      {st['student']}")
-                print(f"         Asistencia: {st['asistencia']:.1%} | Rendimiento: {st['rendimiento']:.1f}/10")
-                for problema in st['problemas']:
+                print(f"         Asistencia: {st['attendance']:.1%} | Rendimiento: {st['score']:.1f}/10")
+                for problema in st['problems']:
                     print(f"         {problema}")
 
 def generate_report_sql(problems_group, problems_students, conn, db=REPORT_DBNAME):
