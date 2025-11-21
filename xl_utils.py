@@ -185,7 +185,7 @@ def analyze_group(excel_file, subject, group, eval_sheet, att_sheet):
         status = "⚠️" if group_problems else "✅"
         #student_status = f", {len(student_problems)} estudiantes problemáticos" if student_problems else ""
         #print(f"   {status} {group}: {len(group_problems)} problemas grupales{student_status}")
-        print(f"{status} {group}")
+        print(f"{status} {group} {group['problems'] if group['problems'] else ''}")
         for student in students_problems:
             print(f"{student['matricula']}: {student['problems']}")
         
