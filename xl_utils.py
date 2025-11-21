@@ -156,7 +156,7 @@ def analyze_group(excel_file, subject, group, eval_sheet, att_sheet):
         } if group_problems else None
         
         # Student analysis
-        student_problems = []
+        students_problems = []
         for i, matricula in enumerate(matriculas):
             if i >= len(attendance_data) or i >= len(scores_data):
                 continue
@@ -164,26 +164,31 @@ def analyze_group(excel_file, subject, group, eval_sheet, att_sheet):
             att_student = np.mean(attendance_data[i])
             score_student = np.mean(scores_data[i])
             
-            problems = []
+            problems_student = []
             if att_student < 0.7:
                 problems.append(f"asistencia crítica ({att_student:.1%})")
             if score_student < 6:
                 problems.append(f"rendimiento crítico ({score_student:.1f}/10)")
             
-            if problems:
-                student_problems.append({
+            if problems_student:
+                print(f"{matricula}: {problems_student}")
+                """student_problems.append({
                     'group': group,
                     'subject': subject,
                     'matricula': matricula,
                     'problems': problems,
                     'attendance': att_student,
                     'score': score_student
-                })
+                })"""
+                group_result['students'].append([matricula, *problems_student])
         
         # Print summary for this group
         status = "⚠️" if group_problems else "✅"
-        student_status = f", {len(student_problems)} estudiantes problemáticos" if student_problems else ""
-        print(f"   {status} {group}: {len(group_problems)} problemas grupales{student_status}")
+        #student_status = f", {len(student_problems)} estudiantes problemáticos" if student_problems else ""
+        #print(f"   {status} {group}: {len(group_problems)} problemas grupales{student_status}")
+        print(f"{status} {group}")
+        for student in students_problems:
+            print()
         
         return group_result, student_problems
         
