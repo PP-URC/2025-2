@@ -100,7 +100,7 @@ def data_to_excel_by_subject(directory, subject, group_data, n_lessons, n_evals)
         attendance_df = pd.DataFrame(data["attendance_data"])
         attendance_df.insert(0, 'Matricula', data["matriculas"])
         attendance_df.insert(1, 'Nombre', data["names"])
-        with pd.ExcelWriter(filepath, engine='xlsxwriter', mode='a' if os.path.exists(filepath) else 'w') as writer:
+        with pd.ExcelWriter(filepath, engine='openpyxl', mode='a' if os.path.exists(filepath) else 'w') as writer:
            
             
 
@@ -112,6 +112,41 @@ def data_to_excel_by_subject(directory, subject, group_data, n_lessons, n_evals)
 
 
     print(f"✅  {len(data["matriculas"])} students to {filename}")
+
+
+def data_to_excel_by_subject(directory, subject, group_data, n_lessons, n_evals):
+    filename = f"{subject}.xlsx"
+    filepath = os.path.join(directory, filename)
+    
+    from openpyxl import Workbook
+    from openpyxl.utils.dataframe import dataframe_to_rows
+    
+    wb = Workbook()
+    wb.remove(wb.active)  # Eliminar hoja por defecto
+    
+    for group, data in group_data.items():
+        # Evaluaciones
+        eval_df = pd.DataFrame(data["evaluation_data"])        
+        eval_df.insert(0, 'Matricula', data["matriculas"])
+        eval_df.insert(1, 'Nombre', data["names"])
+        
+        ws_eval = wb.create_sheet(f'Evaluaciones_{group}')
+        for row in dataframe_to_rows(eval_df, index=False, header=True):
+            ws_eval.append(row)
+        
+        # Asistencia
+        att_df = pd.DataFrame(data["attendance_data"])
+        att_df.insert(0, 'Matricula', data["matriculas"])
+        att_df.insert(1, 'Nombre', data["names"])
+        
+        ws_att = wb.create_sheet(f'Asistencia_{group}')
+        for row in dataframe_to_rows(att_df, index=False, header=True):
+            ws_att.append(row)
+    
+    wb.save(filepath)
+    print(f"✅ {filename} creado con {len(group_data)} grupos")
+
+
 
 def generate_matriculas(num_students, start=264_421_500):
     matriculas = list(range(start, start + num_students))
