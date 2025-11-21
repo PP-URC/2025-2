@@ -85,7 +85,7 @@ def analyze_problems(path='asistencia_calificaciones'):
                     'attendance': attendance_student,
                     'score': score_student
                 })
-    return problems_groups, problems_students
+    #return problems_groups, problems_students
 
 def analyze_problems(path='asistencia_calificaciones'):
     """Analyze academic issues with new Excel structure"""
