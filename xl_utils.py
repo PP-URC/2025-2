@@ -89,7 +89,7 @@ def analyze_problems(path='asistencia_calificaciones'):
 
 def analyze_problems(path='asistencia_calificaciones'):
     """Analyze academic issues with new Excel structure"""
-    print(f"🎓 ANÁLISIS ACADÉMICO - NUEVA ESTRUCTURA\nDIRECTORIO: {path}")
+    print(f"🎓 ANÁLISIS ACADÉMICO\nDIRECTORIO: {path}")
 
     excel_files = glob.glob(os.path.join(path, "*.xlsx"))
     
